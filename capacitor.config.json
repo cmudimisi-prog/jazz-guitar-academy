@@ -1,0 +1,6 @@
+{
+  "appId": "com.jazzguitar.academy",
+  "appName": "Jazz Guitar Academy",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}
