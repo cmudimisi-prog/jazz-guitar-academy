@@ -279,17 +279,18 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
 .recBtn span{width:46px;height:46px;border-radius:50%;background:var(--rose);transition:.2s}.recBtn.on span{width:28px;height:28px;border-radius:6px;animation:recp 1.2s ease-in-out infinite}
 @keyframes recp{50%{opacity:.5}}
 .meter{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin:6px 0;border:1px solid var(--line)}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--brass2),var(--rose));transition:width .08s}
-.grille{background:#fbfaf6;color:#111;border-radius:10px;padding:18px 14px 20px;overflow-x:auto}
-.gtitle{font:600 clamp(24px,4vw,36px) var(--serif);text-align:center;margin-bottom:2px}.gsub{text-align:center;color:#555;font:14px var(--serif);margin-bottom:12px}
+.jamMain .grille .gcell{cursor:pointer}.jamMain .grille .gcell:hover{background:#f1ead6}.jamMain .grille .gcell.on{background:#f3c969}
+.grille{background:#fbfaf6;color:#111;border-radius:10px;padding:18px 14px 20px;container-type:inline-size}
+.gtitle{font:600 clamp(22px,5cqw,36px) var(--serif);text-align:center;margin-bottom:2px}.gsub{text-align:center;color:#555;font:14px var(--serif);margin-bottom:12px}
 .gsec{font:700 14px var(--serif);color:#8a5a00;margin:10px 0 4px}
-.ggrid{display:grid;grid-template-columns:repeat(var(--per),minmax(64px,1fr));border-left:2px solid #111;border-top:2px solid #111;min-width:520px}
-.gcell{position:relative;border-right:2px solid #111;border-bottom:2px solid #111;height:clamp(56px,7vw,82px);display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#111;transition:background .15s}
+.ggrid{display:grid;grid-template-columns:repeat(var(--per),minmax(0,1fr));border-left:2px solid #111;border-top:2px solid #111}
+.gcell{position:relative;border-right:2px solid #111;border-bottom:2px solid #111;height:clamp(52px,calc(100cqw / var(--per) * .6),84px);display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#111;transition:background .15s;overflow:hidden}
 .gcell.on{background:#f3c969}
-.g1{font-size:clamp(16px,2.2vw,26px);font-weight:600;white-space:nowrap}.gs{font-size:clamp(18px,2.4vw,28px)}
+.g1{font-size:clamp(13px,calc(100cqw / var(--per) / 5.4),26px);font-weight:600;white-space:nowrap}.gs{font-size:clamp(16px,calc(100cqw / var(--per) / 4.5),28px)}
 .gdiag{position:absolute;inset:0;width:100%;height:100%}.gdiag line{stroke:#111;stroke-width:1;vector-effect:non-scaling-stroke}
-.g2a,.g2b{position:absolute;font-size:clamp(12px,1.6vw,18px);font-weight:600;white-space:nowrap}.g2a{left:6px;top:5px}.g2b{right:6px;bottom:5px}
-.g4{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;font-size:clamp(11px,1.3vw,14px);font-weight:600;text-align:center}.g4 i{font-style:normal}
-@media (max-width:640px){.ggrid{--per:4!important;min-width:0}}
+.g2a,.g2b{position:absolute;font-size:clamp(11px,calc(100cqw / var(--per) / 8),18px);font-weight:600;white-space:nowrap}.g2a{left:5px;top:4px}.g2b{right:5px;bottom:4px}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;font-size:clamp(10px,calc(100cqw / var(--per) / 10),14px);font-weight:600;text-align:center}.g4 i{font-style:normal}
+@container (max-width:760px){.ggrid{--per:4!important}}
 .hint{font-size:13px;color:var(--muted);line-height:1.5}
 .weekChart text{fill:var(--muted);font-size:10px;font-family:var(--sans);text-anchor:middle}
 .weekChart rect.b{fill:var(--brass)}
@@ -301,7 +302,7 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Version 2.1 · Works fully offline. Your progress is saved on this device.</div>
+    <div class="sideFoot">Version 2.2 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1738,7 +1739,7 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
  <aside class="colSide">
   <div class="card"><h3 style="margin-bottom:12px">Key ideas</h3><ul class="keys">${L.keys.map(k=>`<li>${k}</li>`).join('')}</ul></div>
   <div class="card"><h3 style="margin-bottom:8px">Practice checklist</h3><div class="steps">${steps.map((s,k)=>`<label><input type="checkbox" data-step="${k}" ${stepsDone[k]?'checked':''}> ${s}</label>`).join('')}</div></div>
-  <div class="card" style="display:grid;gap:10px"><button class="btn ${done?'':'pri'}" id="mark">${ic('check')} ${done?'Completed — undo':'Mark lesson complete'}</button>${L.isStd?`<button class="btn" id="stdWav">${ic('dl')} Download soundtrack (WAV)</button><a class="btn" href="#/stdedit/${L.std.slug}">✎ Edit chart</a>`:''}<a class="btn" href="#/jam/custom" id="jamThis">${ic('jam')} Jam on ${L.jam?'the full form':'these changes'}</a></div>
+  <div class="card" style="display:grid;gap:10px"><button class="btn ${done?'':'pri'}" id="mark">${ic('check')} ${done?'Completed — undo':'Mark lesson complete'}</button>${L.isStd?`<button class="btn" id="stdWav">${ic('dl')} Download soundtrack (WAV)</button><a class="btn" href="#/stdedit/${L.std.slug}">✎ Edit chart</a><a class="btn" href="#/jam" data-jamstd="${L.std.slug}">${ic('jam')} Play in the Jam Room (any key)</a>`:''}<a class="btn" href="#/jam/custom" id="jamThis" ${L.isStd?'style="display:none"':''}>${ic('jam')} Jam on ${L.jam?'the full form':'these changes'}</a></div>
  </aside></div>
  <div class="lnav">${prev?`<a class="btn" href="#/lesson/${prev.id}">${ic('back')} ${prev.num} ${prev.title}</a>`:'<span></span>'}${next?`<a class="btn" href="#/lesson/${next.id}">${next.num} ${next.title} ${ic('next')}</a>`:''}</div>`);
  if(L.grid)mountGrid('gridL',L.grid.secs,L.grid.title,L.grid.sub);const tabw=$('#tabw');const drawTab=()=>{tabw.innerHTML=renderTab(tab.events,song.bars,tabw,L.strum);};drawTab();
@@ -1778,9 +1779,20 @@ VIEWS.jam=(arg)=>{const J=Object.assign({preset:0,key:'C',style:'swing',bpm:120,
  const mix=Object.assign({},MIX_DEFAULT,Store.get('mix',{}));
  const save=()=>Store.set('jam',J);
  const keyOpts=FLAT.map(k=>`<option ${k===J.key?'selected':''}>${k}</option>`).join('');
+ const stdTitles=[...new Set(Object.values(REPERTOIRE).flat().map(r=>r[0]))].filter(t=>STD_CHARTS[t]||Store.get('stdCharts',{})[slugOf(t)]).sort((a,b)=>a.replace(/^The /,'').localeCompare(b.replace(/^The /,'')));
+ const myTitles=Store.get('mySongs',[]).filter(t=>hasChart(t));
+ const isStd=()=>String(J.preset).startsWith('std:');const stdTitle=()=>titleOfSlug(String(J.preset).slice(4));
+ if(isStd()&&!(stdTitle()&&hasChart(stdTitle()))){J.preset=0;}
+ const keyRootOf=(label,bars)=>{const m=String(label||'').replace(/♭/g,'b').replace(/♯/g,'#').match(/^([A-G][b#]?)/);if(m)return pcOf(m[1]);const p=parseChord((bars[0]||'C').split(' ')[0]);return p?p.root:0;};
+ const src=()=>{if(J.preset==='custom')return {name:'Custom',secs:[{name:'',bars:parseProg(J.custom)}],orig:null};
+  if(isStd()){const t=stdTitle();const C=chartFor(t);const secs=parseChart(C.chart);return {name:t,secs,orig:keyRootOf(C.key,secs.flatMap(x=>x.bars)),C};}
+  const P=PRESETS[J.preset];return {name:P.name,secs:[{name:'',bars:P.bars}],orig:pcOf(P.key)};};
  V(`<div class="eyebrow">Soundtracks & play-alongs</div><h1>Jam Room</h1><p class="muted" style="max-width:640px">A synthesised rhythm section — walking bass, drums and comping — that plays any progression, in any key, at any tempo. Download any setting as a WAV soundtrack.</p><div class="sp"></div>
  <div class="jam"><div class="card jamCtl">
-  <label class="f">Progression<select id="jp">${PRESETS.map((p,i)=>`<option value="${i}" ${String(J.preset)===String(i)?'selected':''}>${p.name}</option>`).join('')}<option value="custom" ${J.preset==='custom'?'selected':''}>✎ Custom progression…</option></select></label>
+  <label class="f">Progression or standard<select id="jp"><optgroup label="Practice progressions">${PRESETS.map((p,i)=>`<option value="${i}" ${String(J.preset)===String(i)?'selected':''}>${p.name}</option>`).join('')}</optgroup>
+   <optgroup label="Standards — full grids">${stdTitles.map(t=>`<option value="std:${slugOf(t)}" ${J.preset==='std:'+slugOf(t)?'selected':''}>${t}</option>`).join('')}</optgroup>
+   ${myTitles.length?`<optgroup label="My transcriptions">${myTitles.map(t=>`<option value="std:${slugOf(t)}" ${J.preset==='std:'+slugOf(t)?'selected':''}>🎙 ${t}</option>`).join('')}</optgroup>`:''}
+   <option value="custom" ${J.preset==='custom'?'selected':''}>✎ Custom progression…</option></select></label>
   <div id="jcu" ${J.preset==='custom'?'':'hidden'}><label class="f">Chords — separate bars with | (up to 4 chords per bar, % repeats)<textarea id="jct" rows="3">${J.custom}</textarea></label><div class="sp" style="height:8px"></div><button class="btn sm" id="jca">Apply chords</button></div>
   <div class="two"><label class="f">Key<select id="jk" ${J.preset==='custom'?'disabled':''}>${keyOpts}</select></label><label class="f">Export choruses<select id="jx">${[1,2,3,4,6].map(n=>`<option ${n===J.choruses?'selected':''}>${n}</option>`).join('')}</select></label></div>
   <div><div class="flabel">Style</div><div class="chips" id="js">${[['swing','Swing'],['bossa','Bossa nova'],['ballad','Ballad']].map(([v,l])=>`<button class="chip ${J.style===v?'on':''}" data-v="${v}">${l}</button>`).join('')}</div></div>
@@ -1794,39 +1806,42 @@ VIEWS.jam=(arg)=>{const J=Object.assign({preset:0,key:'C',style:'swing',bpm:120,
  <div class="jamMain">
   <div class="card now"><div class="row nowTop"><div><div class="eyebrow">Now playing</div><div class="bigChord" id="jnow">–</div><div class="muted" id="jnext"></div></div><div class="beats big" id="jbeats"><i></i><i></i><i></i><i></i></div></div>
    <div class="scaleTip" id="jtip"></div><div class="fbscroll" id="jfb"></div></div>
-  <div><div class="flabel">Chart — tap a bar to start there</div><div class="chart" id="jchart"></div></div>
+  <div class="card gcard" id="jgridCard"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>Chord grid · Grille harmonique</h3><div class="row" style="gap:6px"><span class="hint">Tap a bar to start there</span><button class="btn sm" data-gridpng>${ic('dl')} PNG</button><button class="btn sm" data-gridprint>Print</button></div></div><div id="jchart"></div></div>
  </div></div>`);
  let song=null,curKey=null;
- const getBars=()=>{if(J.preset==='custom')return parseProg(J.custom);const P=PRESETS[J.preset];const n=(pcOf(J.key)-pcOf(P.key)+12)%12;return P.bars.map(b=>b.split(' ').map(s=>transposeSym(s,n)).join(' '));};
+ const tSecs=()=>{const S=src();const n=S.orig==null?0:(pcOf(J.key)-S.orig+12)%12;return S.secs.map(x=>({name:x.name,bars:x.bars.map(b=>b.split(' ').map(s=>s==='%'?s:trK(s,n)).join(' '))}));};
+ const trK=(sym,n)=>{const sharp=['G','D','A','E','B','F#'].includes(J.key)||J.key==='Gb'&&false;const t=transposeSym(sym,n);if(!sharp)return t;return t.replace(/^([A-G]b?)/,m=>SHARP[pcOf(m)]).replace(/\/([A-G]b?)$/,(x,m)=>'/'+SHARP[pcOf(m)]);};
+ const getBars=()=>tSecs().flatMap(x=>x.bars);
+ const gTitle=()=>{const S=src();return S.name;};const gSub=()=>{const S=src();return [J.preset==='custom'?'':'Key '+pretty(J.key),S.C&&S.C.form?S.C.form:'',J.bpm+' BPM',J.style].filter(Boolean).join(' · ');};
  const showChord=(ch,nx)=>{const P=ch.p;const key=ch.sym+'|'+(nx?nx.sym:'');if(key===curKey)return;curKey=key;$('#jnow').textContent=pretty(ch.sym);$('#jnext').textContent=nx?'next: '+pretty(nx.sym):'';
   const sc=SCALES[P.Q.sc];const tones=P.Q.iv.map(x=>nameFor((P.root+x)%12,P.root));
   $('#jtip').innerHTML=`Try <b>${nameFor(P.root,P.root)} ${sc.n}</b> · chord tones ${tones.map(pretty).join(' ')} <span class="muted">(${P.Q.iv.map(x=>pretty(intervalLabel(x%12,P.q))).join(' ')})</span>`;
   $('#jfb').innerHTML=fretboard({from:0,to:12,w:900,sg:24,dots:scaleDots(P.root,sc.iv,0,12,{ct:P.Q.iv,q:P.q})});};
- const draw=()=>{song=buildSong(getBars());$('#jchart').innerHTML=song.bars.map((b,i)=>`<div class="bar" id="jbar${i}" data-bar="${i}">${b.chords.map(c=>`<span>${pretty(c.sym)}</span>`).join('')}</div>`).join('');curKey=null;showChord(song.bars[0].chords[0],song.bars[0].chords[1]||(song.bars[1]||song.bars[0]).chords[0]);};
+ const draw=()=>{const secs=tSecs();song=buildSong(secs.flatMap(x=>x.bars));$('#jchart').innerHTML=gridHTML(secs,gTitle(),gSub());mountGrid('jgridCard',secs,gTitle(),gSub());curKey=null;showChord(song.bars[0].chords[0],song.bars[0].chords[1]||(song.bars[1]||song.bars[0]).chords[0]);};
  draw();$('#jsww').style.display=J.style==='swing'?'':'none';
  const onUI=e=>{if(!$('#jchart'))return;if(e.type==='count'){$$('#jbeats i').forEach((b,k)=>b.className=k===e.n-1?'cnt':'');$('#jnow').textContent=e.n;curKey=null;return;}
-  if(e.type!=='beat')return;$$('#jbeats i').forEach((b,k)=>b.className=k===e.beat?'on':'');$$('.bar.on').forEach(x=>x.classList.remove('on'));const be=$('#jbar'+e.bar);if(be)be.classList.add('on');
+  if(e.type!=='beat')return;$$('#jbeats i').forEach((b,k)=>b.className=k===e.beat?'on':'');if(e.beat===0)highlightGridBar(e.bar);
   const bar=song.bars[e.bar];let acc=0,ci=0;bar.chords.forEach((c,k)=>{if(e.beat>=acc)ci=k;acc+=c.beats;});const nx=bar.chords[ci+1]||(song.bars[e.bar+1]||song.bars[0]).chords[0];showChord(bar.chords[ci],nx);};
- const reset=()=>{if(!$('#jchart'))return;$('#jpp').innerHTML=`${ic('play',1)} Play`;$$('.bar.on').forEach(x=>x.classList.remove('on'));$$('#jbeats i').forEach(b=>b.className='');};
- const opts=(startBar=0)=>({source:'jam',title:(J.preset==='custom'?'Custom':PRESETS[J.preset].name)+(J.preset==='custom'?'':' in '+pretty(J.key)),href:'#/jam',bpm:J.bpm,style:J.style,swing:J.swing/100,compInst:J.comp,parts:{bass:true,drums:true,comp:true},loop:J.loop,countIn:J.count,startBar,mix,onUI,onStop:reset});
+ const reset=()=>{if(!$('#jchart'))return;$('#jpp').innerHTML=`${ic('play',1)} Play`;$$('.gcell.on').forEach(x=>x.classList.remove('on'));$$('#jbeats i').forEach(b=>b.className='');};
+ const opts=(startBar=0)=>({source:'jam',title:gTitle()+(J.preset==='custom'?'':' in '+pretty(J.key)),href:'#/jam',bpm:J.bpm,style:J.style,swing:J.swing/100,compInst:J.comp,parts:{bass:true,drums:true,comp:true},loop:J.loop,countIn:J.count,startBar,mix,onUI,onStop:reset});
  const start=(sb=0)=>{tpStart(song,opts(sb));$('#jpp').innerHTML=`${ic('stop',1)} Stop`;};
  const restartIfPlaying=()=>{if(TP.playing&&TP.o.source==='jam')start();};
  if(TP.playing&&TP.o.source==='jam'){song=TP.song;TP.o.onUI=onUI;TP.o.onStop=reset;$('#jpp').innerHTML=`${ic('stop',1)} Stop`;}
  $('#jpp').onclick=()=>{if(TP.playing&&TP.o.source==='jam')tpStop();else start();};
  $('#jchart').onclick=e=>{const b=e.target.closest('[data-bar]');if(b)start(+b.dataset.bar);};
- $('#jp').onchange=e=>{const v=e.target.value;J.preset=v==='custom'?'custom':+v;if(J.preset!=='custom'){const P=PRESETS[J.preset];J.key=P.key;J.style=P.style;J.bpm=P.bpm;}save();const wasPlaying=TP.playing&&TP.o.source==='jam';if(wasPlaying)tpStop();VIEWS.jam();if(wasPlaying)$('#jpp').click();};
+ $('#jp').onchange=e=>{const v=e.target.value;J.preset=v==='custom'?'custom':v.startsWith('std:')?v:+v;if(isStd()){const S=src();J.key=FLAT[S.orig];J.style=S.C.style==='pop'?'swing':(S.C.style||'swing');J.bpm=S.C.bpm||120;}else if(J.preset!=='custom'){const P=PRESETS[J.preset];J.key=P.key;J.style=P.style;J.bpm=P.bpm;}save();const wasPlaying=TP.playing&&TP.o.source==='jam';if(wasPlaying)tpStop();VIEWS.jam();if(wasPlaying)$('#jpp').click();};
  $('#jk').onchange=e=>{J.key=e.target.value;save();draw();restartIfPlaying();};
  $('#jca').onclick=()=>{J.custom=$('#jct').value;save();draw();restartIfPlaying();toast('Chords applied');};
  $('#jx').onchange=e=>{J.choruses=+e.target.value;save();};
  $$('#js .chip').forEach(c=>c.onclick=()=>{J.style=c.dataset.v;save();$$('#js .chip').forEach(x=>x.classList.toggle('on',x===c));$('#jsww').style.display=J.style==='swing'?'':'none';if(TP.playing&&TP.o.source==='jam')TP.o.style=J.style;});
  $$('#jc .chip').forEach(c=>c.onclick=()=>{J.comp=c.dataset.v;save();$$('#jc .chip').forEach(x=>x.classList.toggle('on',x===c));if(TP.playing&&TP.o.source==='jam')TP.o.compInst=J.comp;});
- $('#jb').oninput=e=>{J.bpm=+e.target.value;$('#jbv').textContent=J.bpm+' BPM';if(TP.playing&&TP.o.source==='jam')TP.o.bpm=J.bpm;};$('#jb').onchange=save;
+ $('#jb').oninput=e=>{J.bpm=+e.target.value;$('#jbv').textContent=J.bpm+' BPM';const gs=$('#jchart .gsub');if(gs)gs.textContent=gSub();if(TP.playing&&TP.o.source==='jam')TP.o.bpm=J.bpm;};$('#jb').onchange=save;
  $('#jsw').oninput=e=>{J.swing=+e.target.value;$('#jswv').textContent=J.swing+'%';if(TP.playing&&TP.o.source==='jam')TP.o.swing=J.swing/100;};$('#jsw').onchange=save;
  $('#jl').onchange=e=>{J.loop=e.target.checked;save();if(TP.playing&&TP.o.source==='jam')TP.o.loop=J.loop;};$('#jci').onchange=e=>{J.count=e.target.checked;save();};
  $$('[data-mix]').forEach(r=>r.oninput=()=>{mix[r.dataset.mix]=+r.value;Store.set('mix',mix);if(TP.playing&&TP.s&&TP.s.buses[r.dataset.mix])TP.s.buses[r.dataset.mix].gain.value=+r.value;});
  $('#jdl').onclick=async()=>{const b=$('#jdl');b.disabled=true;b.textContent='Rendering…';toast('Rendering your soundtrack…');
   try{const blob=await renderWav(song,Object.assign(opts(),{loop:false}),J.choruses);const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-   a.download=`${(J.preset==='custom'?'custom':PRESETS[J.preset].name).replace(/[^\w]+/g,'-')}-${J.preset==='custom'?'':J.key+'-'}${J.bpm}bpm.wav`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);toast('Soundtrack ready');}
+   a.download=`${slugOf(gTitle())}-${J.preset==='custom'?'':J.key+'-'}${J.bpm}bpm.wav`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),60000);toast('Soundtrack ready');}
   catch(err){toast('Could not render audio in this browser');}b.disabled=false;b.innerHTML=`${ic('dl')} WAV`;};};
 
 // ---------- CHORD LIBRARY ----------
@@ -2280,7 +2295,9 @@ VIEWS.grids=(sel)=>{const titles=[...new Set([...Object.values(REPERTOIRE).flat(
  $('#gq').oninput=e=>{const q=e.target.value.toLowerCase();$$('#glist .chip').forEach(c=>c.style.display=c.dataset.t.includes(q)?'':'none');};
  if(!cur){$('#gview').innerHTML='<p class="muted">No charts yet.</p>';return;}
  const C=chartFor(cur);const secs=parseChart(C.chart);const meta=Object.values(REPERTOIRE).flat().find(r=>r[0]===cur);const sub=[meta?`${meta[1]} · ${meta[2]}`:(C.transcribed?'Transcribed from audio':''),C.key?'Key '+pretty(C.key):'',C.form||''].filter(Boolean).join(' · ');
- $('#gview').innerHTML=gridCard(secs,cur,sub,'gridMain')+`<div class="row" style="margin-top:12px;gap:8px"><a class="btn pri" href="#/standard/${slugOf(cur)}">${ic('play',1)} Tab, shapes & soundtrack</a><a class="btn" href="#/stdedit/${slugOf(cur)}">✎ Edit chart</a></div>`;mountGrid('gridMain',secs,cur,sub);};
+ $('#gview').innerHTML=gridCard(secs,cur,sub,'gridMain')+`<div class="row" style="margin-top:12px;gap:8px"><a class="btn pri" href="#/standard/${slugOf(cur)}">${ic('play',1)} Tab, shapes & soundtrack</a><a class="btn" href="#/jam" data-jamstd="${slugOf(cur)}">${ic('jam')} Play in the Jam Room</a><a class="btn" href="#/stdedit/${slugOf(cur)}">✎ Edit chart</a></div>`;mountGrid('gridMain',secs,cur,sub);};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-jamstd]');if(!b)return;const J=Store.get('jam',{});const t=titleOfSlug(b.dataset.jamstd);const C=t&&chartFor(t);if(!C)return;const m=String(C.key||'').replace(/♭/g,'b').replace(/♯/g,'#').match(/^([A-G][b#]?)/);
+ Object.assign(J,{preset:'std:'+b.dataset.jamstd,key:m?FLAT[pcOf(m[1])]:'C',style:C.style==='pop'?'swing':(C.style||'swing'),bpm:C.bpm||120});Store.set('jam',J);});
 // Android app: save downloads through the native file system and share sheet
 (function(){const orig=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){const C=window.Capacitor;const P=C&&C.Plugins;
  if(this.download&&C&&C.isNativePlatform&&C.isNativePlatform()&&P&&P.Filesystem){const name=this.download,href=this.href;
