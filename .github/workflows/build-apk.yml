@@ -37,6 +37,15 @@ jobs:
           sed -i -E "s/versionName \"[^\"]*\"/versionName \"2.0.${{ github.run_number }}\"/" $G
           grep -E "versionCode|versionName" $G
           mkdir -p ~/.android && cp android-debug.keystore ~/.android/debug.keystore
+          cp android-debug.keystore android/app/jga.keystore
+          python3 - <<'PY'
+          import re
+          p='android/app/build.gradle';g=open(p).read()
+          if 'jga.keystore' not in g:
+              g=re.sub(r'android\s*\{','android {\n    signingConfigs {\n        debug {\n            storeFile file("jga.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }\n    }',g,count=1)
+              open(p,'w').write(g)
+          PY
+          grep -n -A5 "signingConfigs" android/app/build.gradle
       - name: Build debug APK
         run: |
           cd android && chmod +x gradlew
