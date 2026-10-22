@@ -279,6 +279,17 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
 .recBtn span{width:46px;height:46px;border-radius:50%;background:var(--rose);transition:.2s}.recBtn.on span{width:28px;height:28px;border-radius:6px;animation:recp 1.2s ease-in-out infinite}
 @keyframes recp{50%{opacity:.5}}
 .meter{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin:6px 0;border:1px solid var(--line)}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--brass2),var(--rose));transition:width .08s}
+.grille{background:#fbfaf6;color:#111;border-radius:10px;padding:18px 14px 20px;overflow-x:auto}
+.gtitle{font:600 clamp(24px,4vw,36px) var(--serif);text-align:center;margin-bottom:2px}.gsub{text-align:center;color:#555;font:14px var(--serif);margin-bottom:12px}
+.gsec{font:700 14px var(--serif);color:#8a5a00;margin:10px 0 4px}
+.ggrid{display:grid;grid-template-columns:repeat(var(--per),minmax(64px,1fr));border-left:2px solid #111;border-top:2px solid #111;min-width:520px}
+.gcell{position:relative;border-right:2px solid #111;border-bottom:2px solid #111;height:clamp(56px,7vw,82px);display:flex;align-items:center;justify-content:center;font-family:var(--serif);color:#111;transition:background .15s}
+.gcell.on{background:#f3c969}
+.g1{font-size:clamp(16px,2.2vw,26px);font-weight:600;white-space:nowrap}.gs{font-size:clamp(18px,2.4vw,28px)}
+.gdiag{position:absolute;inset:0;width:100%;height:100%}.gdiag line{stroke:#111;stroke-width:1;vector-effect:non-scaling-stroke}
+.g2a,.g2b{position:absolute;font-size:clamp(12px,1.6vw,18px);font-weight:600;white-space:nowrap}.g2a{left:6px;top:5px}.g2b{right:6px;bottom:5px}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:2px 6px;font-size:clamp(11px,1.3vw,14px);font-weight:600;text-align:center}.g4 i{font-style:normal}
+@media (max-width:640px){.ggrid{--per:4!important;min-width:0}}
 .hint{font-size:13px;color:var(--muted);line-height:1.5}
 .weekChart text{fill:var(--muted);font-size:10px;font-family:var(--sans);text-anchor:middle}
 .weekChart rect.b{fill:var(--brass)}
@@ -290,7 +301,7 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Version 2.0 · Works fully offline. Your progress is saved on this device.</div>
+    <div class="sideFoot">Version 2.1 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1316,6 +1327,38 @@ const STD_CHARTS={
  'When the Saints Go Marching In':{key:'C',style:'swing',bpm:120,form:'16 bars',melody:'rq 2/1q 1/0q 1/1q | 1/3w | rq 2/1q 1/0q 1/1q | 1/3w | rq 2/1q 1/0q 1/1q | 1/3h 1/0h | 2/1h 1/0h | 2/3w | rq 1/0q 1/0q 2/3q | 2/1h. 2/1q | 1/0q 1/3h 1/3q | 1/1w | rq 2/1q 1/0q 1/1q | 1/3h 1/0h | 2/1h 2/3h | 2/1w',chart:'A: C | C | C | C | C | C | G7 | G7 || B: C | C7 | F | F | C | G7 | C | C'}
 };
 function parseChart(str){return String(str).split('||').map(x=>x.trim()).filter(Boolean).map(sec=>{const m=sec.match(/^([^:|]{1,24}):\s*(.*)$/s);return {name:m?m[1].trim():'',bars:parseProg(m?m[2]:sec)};});}
+
+// ---- More standards (common lead-sheet changes; verify against your own Real Book) ----
+const _CONF_A='Fmaj7 | Em7b5 A7 | Dm7 G7 | Cm7 F7 | Bb7 | Bbm7 Eb7 | Am7 D7 | Gm7 C7';
+const _SENT_A='Dm Dmmaj7 | Dm7 Dm6 | Gm Gmmaj7 | Gm7 C7 | Fmaj7 | Em7b5 A7 | Dm7 G7';
+const _SOFT_A='Cm7 | Dm7b5 G7 | Cm7 | Dm7b5 G7 | Cm7 | Dm7b5 G7 | Cm7 | Dm7b5 G7';
+const _CHER_A='Bbmaj7 | Bbmaj7 | Fm7 | Bb7 | Ebmaj7 | Ab7 | Bbmaj7 | G7 | Cm7 | Cm7 | F7 | F7 | Bbmaj7 | Bbmaj7 | Cm7 | F7';
+const _ORN_1='Gmaj7 | Gmaj7 | Gm7 | C7 | Fmaj7 | Fmaj7 | Fm7 | Bb7 | Ebmaj7 | Am7b5 D7 | Gmaj7 | Am7 D7 | Bm7 | E7 | Am7 | D7';
+const _ORN_2='Gmaj7 | Gmaj7 | Gm7 | C7 | Fmaj7 | Fmaj7 | Fm7 | Bb7 | Ebmaj7 | Am7b5 D7 | Gmaj7 | Bm7b5 E7 | Am7 | Cm7 F7 | Gmaj7 | Am7 D7';
+const _JF_1='Cmaj7 | Cmaj7 | Cm7 | F7 | Gmaj7 | Gmaj7 | Bbm7 | Eb7 | Am7 | Am7 | D7 | D7 | Bm7 | E7 | Am7 | D7';
+const _JF_2='Cmaj7 | Cmaj7 | Cm7 | F7 | Gmaj7 | Gmaj7 | Bbm7 | Eb7 | Am7 | Am7 | Cm7 | F7 | Bm7 E7 | Am7 D7 | Gmaj7 | Am7 D7';
+const _SOFM='Fm7 | Fm7 | Eb7 | Eb7 | Db7 | C7 | Fm7 | Fm7';
+Object.assign(STD_CHARTS,{
+ 'Confirmation':{key:'F',style:'swing',bpm:200,form:'AABA, 32 bars',chart:`A: ${_CONF_A} || A: ${_CONF_A.replace(/Gm7 C7$/,'Fmaj7')} || B: Cm7 | F7 | Bbmaj7 | Bbmaj7 | Ebm7 | Ab7 | Dbmaj7 | Gm7 C7 || A: ${_CONF_A.replace(/Gm7 C7$/,'Fmaj7')}`},
+ 'In a Sentimental Mood':{key:'D minor / D♭',style:'ballad',bpm:60,form:'AABA, 32 bars',chart:`A: ${_SENT_A} | Gm7 C7 || A: ${_SENT_A} | Fmaj7 || B: Dbmaj7 Bbm7 | Ebm7 Ab7 | Dbmaj7 Bbm7 | Ebm7 Ab7 | Dbmaj7 Bbm7 | Ebm7 Ab7 | Gm7 | C7 || A: ${_SENT_A} | Fmaj7`},
+ 'Softly, as in a Morning Sunrise':{key:'C minor',style:'swing',bpm:140,form:'AABA, 32 bars',chart:`A: ${_SOFT_A} || A: ${_SOFT_A} || B: Gm7b5 | C7b9 | Fm7 | Bb7 | Ebmaj7 | Abmaj7 | Dm7b5 | G7b9 || A: ${_SOFT_A}`},
+ 'Cherokee':{key:'B♭',style:'swing',bpm:240,form:'AABA, 64 bars',chart:`A: ${_CHER_A} || A: ${_CHER_A.replace(/Cm7 \| F7$/,'Bbmaj7 | Bbmaj7')} || B: C#m7 | F#7 | Bmaj7 | Bmaj7 | Bm7 | E7 | Amaj7 | Amaj7 | Am7 | D7 | Gmaj7 | Gmaj7 | Gm7 | C7 | Cm7 | F7 || A: ${_CHER_A.replace(/Cm7 \| F7$/,'Bbmaj7 | Bbmaj7')}`},
+ 'Ornithology':{key:'G',style:'swing',bpm:190,form:'AB, 32 bars (How High the Moon changes)',chart:`A: ${_ORN_1} || B: ${_ORN_2}`},
+ 'Just Friends':{key:'G',style:'swing',bpm:160,form:'AB, 32 bars',chart:`A: ${_JF_1} || B: ${_JF_2}`},
+ 'Summertime':{key:'A minor',style:'swing',bpm:110,form:'16 bars',chart:'A: Am6 | E7 | Am6 | Am6 | Dm7 | Dm7 | Bm7b5 | E7 || A: Am6 | E7 | Am6 | Am6 | C Am7 | Dm7 E7 | Am6 | Bm7b5 E7'},
+ 'Watermelon Man':{key:'F',style:'pop',bpm:120,form:'16-bar blues',chart:'A: F7 | F7 | F7 | F7 | Bb7 | Bb7 | F7 | F7 || B: C7 | Bb7 | C7 | Bb7 | F7 | F7 | F7 | F7'},
+ 'Footprints':{key:'C minor',style:'swing',bpm:150,form:'12-bar minor blues (6/4 in the original)',chart:'Minor blues: Cm11 | Cm11 | Cm11 | Cm11 | Fm7 | Fm7 | Cm11 | Cm11 | D7#9 | Db7#11 | Cm11 | Cm11'},
+ 'Sweet Georgia Brown':{key:'F',style:'swing',bpm:200,form:'AB, 32 bars',chart:'A: D7 | D7 | D7 | D7 | G7 | G7 | G7 | G7 | C7 | C7 | C7 | C7 | F | F | F | F || B: D7 | D7 | D7 | D7 | G7 | G7 | G7 | G7 | Dm | A7 | Dm | A7 | F | D7 | G7 C7 | F'},
+ 'All Blues':{key:'G',style:'swing',bpm:150,form:'12-bar blues (6/8 in the original)',chart:'Blues: G7 | G7 | G7 | G7 | Gm7 | Gm7 | G7 | G7 | D7#9 | Eb7#9 D7#9 | G7 | G7'},
+ 'Song for My Father':{key:'F minor',style:'bossa',bpm:120,form:'AAB, 24 bars',chart:`A: ${_SOFM} || A: ${_SOFM} || B: Eb7 | Eb7 | Fm7 | Fm7 | Eb7 | Db7 C7 | Fm7 | Fm7`},
+ 'Doxy':{key:'B♭',style:'swing',bpm:130,form:'16 bars',chart:'A: Bb7 Ab7 | G7 | C7 | F7 | Bb7 Ab7 | G7 | C7 F7 | Bb7 F7 || B: Eb7 | Eb7 | Bb7 | Bb7 | C7 | F7 | Bb7 | C7 F7'},
+ 'Equinox':{key:'C♯ minor',style:'swing',bpm:120,form:'12-bar minor blues',chart:'Minor blues: C#m7 | C#m7 | C#m7 | C#m7 | F#m7 | F#m7 | C#m7 | C#m7 | A7 | G#7 | C#m7 | C#m7'},
+ 'Blues for Alice':{key:'F',style:'swing',bpm:180,form:'12-bar “Bird blues”',chart:'Blues: Fmaj7 | Em7b5 A7 | Dm7 G7 | Cm7 F7 | Bb7 | Bbm7 Eb7 | Am7 D7 | Abm7 Db7 | Gm7 | C7 | F7 D7 | Gm7 C7'},
+ 'Tenor Madness':{key:'B♭',style:'swing',bpm:160,form:'12-bar jazz blues',chart:'Blues: Bb7 | Eb7 | Bb7 | Fm7 Bb7 | Eb7 | Edim7 | Bb7 | G7 | Cm7 | F7 | Bb7 G7 | Cm7 F7'},
+ 'Now’s the Time':{key:'F',style:'swing',bpm:150,form:'12-bar jazz blues',chart:'Blues: F7 | Bb7 | F7 | Cm7 F7 | Bb7 | Bb7 | F7 | Am7 D7 | Gm7 | C7 | F7 D7 | Gm7 C7'},
+ 'Straight, No Chaser':{key:'F',style:'swing',bpm:150,form:'12-bar jazz blues',chart:'Blues: F7 | Bb7 | F7 | Cm7 F7 | Bb7 | Bdim7 | F7 | Am7 D7 | Gm7 | C7 | F7 D7 | Gm7 C7'}
+});
+REPERTOIRE.library=[['All Blues','Miles Davis','1959','A 12-bar blues in G with a ♯9 colour in bars 9–10 — modal blues soloing.'],['Song for My Father','Horace Silver','1964','F-minor bossa groove with a descending dominant line (E♭7 – D♭7 – C7).'],['Doxy','Sonny Rollins','1954','16 bars of dominant chords — secondary dominants and guide tones.'],['Equinox','John Coltrane','1960','Minor blues in C♯ minor — minor pentatonic and Dorian.'],['Blues for Alice','Charlie Parker','1951','The “Bird blues”: a descending chain of ii–Vs — the bebop line study.'],['Tenor Madness','Sonny Rollins','1956','B♭ jazz blues — comping shells and blues vocabulary.'],['Now’s the Time','Charlie Parker','1945','F blues riff tune — call and response with bebop blues language.'],['Straight, No Chaser','Thelonious Monk','1951','F blues with a displaced riff — rhythmic displacement.']];
 /*CORE-END*/
 
 // =====================================================================
@@ -1511,7 +1554,7 @@ const ICP={home:'M3 11l9-7 9 7v9h-6v-6H9v6H3z',book:'M4 5a2 2 0 0 1 2-2h13v16H6a
  chord:'M6 3v18M10 3v18M14 3v18M18 3v18M6 7h12M6 12h12M6 17h12',fret:'M2 6h20M2 10h20M2 14h20M2 18h20M7 4v16M13 4v16M19 4v16',ear:'M7 9a5 5 0 1 1 10 0c0 3.5-3 4.5-3 7.5a3 3 0 0 1-6 0M10 9a2 2 0 0 1 4 0',
  metro:'M8 21h8L13.5 3h-3zM12 15l6-9',tools:'M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4',check:'M5 12.5l4.5 4.5L19 7',dl:'M12 3v12M7 10l5 5 5-5M4 20h16',
  back:'M15 18l-6-6 6-6',next:'M9 18l6-6-6-6',tap:'M12 3v4M5 8l2.5 2.5M19 8l-2.5 2.5M9 21l1-8h4l1 8z',
- play:'M7 4.5v15l12.5-7.5z',wave:'M3 12h2M7 8v8M11 4v16M15 7v10M19 10v4M21 12h0',rec:'M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM19 11a7 7 0 0 1-14 0M12 18v3',tune:'M4 18a8 8 0 1 1 16 0M12 18l4-7M12 4v2M5 9l1.5 1M19 9l-1.5 1',stop:'M6 6h12v12H6z'};
+ play:'M7 4.5v15l12.5-7.5z',wave:'M3 12h2M7 8v8M11 4v16M15 7v10M19 10v4M21 12h0',grid:'M3 3h18v18H3zM3 9h18M3 15h18M9 3v18M15 3v18',rec:'M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM19 11a7 7 0 0 1-14 0M12 18v3',tune:'M4 18a8 8 0 1 1 16 0M12 18l4-7M12 4v2M5 9l1.5 1M19 9l-1.5 1',stop:'M6 6h12v12H6z'};
 function ic(n,fill){return fill?`<svg viewBox="0 0 24 24" fill="currentColor"><path d="${ICP[n]}"/></svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${ICP[n]}"/></svg>`;}
 
 function fretboard(o){const from=o.from||0,to=o.to==null?12:o.to,w=o.w||820,dots=o.dots||[];const base=from===0?0:from-1;
@@ -1612,7 +1655,7 @@ function figHTML(F){
 //  VIEWS
 // =====================================================================
 const VIEWS={};
-const NAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam Room','jam'],['repertoire','Repertoire','book'],['chords','Chord Library','chord'],['fretboard','Fretboard','fret'],['transcribe','Audio → Tab','rec'],['recognize','Chord Recognition','wave'],['ear','Ear Training','ear'],['metronome','Metronome & Timer','metro'],['tuner','Guitar Tuner','tune']];
+const NAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam Room','jam'],['repertoire','Repertoire','book'],['grids','Chord Grids','grid'],['chords','Chord Library','chord'],['fretboard','Fretboard','fret'],['transcribe','Audio → Tab','rec'],['recognize','Chord Recognition','wave'],['ear','Ear Training','ear'],['metronome','Metronome & Timer','metro'],['tuner','Guitar Tuner','tune']];
 const BNAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam','jam'],['chords','Chords','chord'],['tools','Tools','tools']];
 $('#sideNav').innerHTML=NAV.map(([r,l,i])=>`<a class="navlink" data-r="${r}" href="#/${r}">${ic(i)}${l}</a>`).join('');
 $('#bottomNav').innerHTML=BNAV.map(([r,l,i])=>`<a data-r="${r}" href="#/${r}">${ic(i)}${l}</a>`).join('');
@@ -1683,6 +1726,7 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
    <div class="row" style="flex-wrap:nowrap"><button class="btn pri" id="pp" style="min-width:104px">${ic('play',1)} Play</button><label class="f" style="flex:1">Tempo · <b id="bv">${st.bpm} BPM</b><input type="range" min="40" max="240" id="bpm" value="${st.bpm}"></label></div>
    <div class="row toggles">${tg('t_guitar','Guitar track',st.guitar)}${tg('t_band','Band',st.band)}${tg('t_click','Click',st.click)}${tg('t_loop','Loop',st.loop)}${tg('t_count','Count-in',st.count)}</div>
   </div>
+  ${L.grid?gridCard(L.grid.secs,L.grid.title,L.grid.sub,'gridL'):''}
   <div class="tabwrap"><div class="tabhead"><h3>Tab</h3><span class="hint">Notes light up as they play</span></div><div id="tabw"></div></div>
   <article class="card prose">${linkify(L.html)}</article>
   ${L.table?`<div class="card"><h3 style="margin-bottom:10px">${L.table.title}</h3><div class="tblwrap"><table class="atbl"><thead><tr>${L.table.head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${L.table.rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`:''}
@@ -1697,7 +1741,7 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
   <div class="card" style="display:grid;gap:10px"><button class="btn ${done?'':'pri'}" id="mark">${ic('check')} ${done?'Completed — undo':'Mark lesson complete'}</button>${L.isStd?`<button class="btn" id="stdWav">${ic('dl')} Download soundtrack (WAV)</button><a class="btn" href="#/stdedit/${L.std.slug}">✎ Edit chart</a>`:''}<a class="btn" href="#/jam/custom" id="jamThis">${ic('jam')} Jam on ${L.jam?'the full form':'these changes'}</a></div>
  </aside></div>
  <div class="lnav">${prev?`<a class="btn" href="#/lesson/${prev.id}">${ic('back')} ${prev.num} ${prev.title}</a>`:'<span></span>'}${next?`<a class="btn" href="#/lesson/${next.id}">${next.num} ${next.title} ${ic('next')}</a>`:''}</div>`);
- const tabw=$('#tabw');const drawTab=()=>{tabw.innerHTML=renderTab(tab.events,song.bars,tabw,L.strum);};drawTab();
+ if(L.grid)mountGrid('gridL',L.grid.secs,L.grid.title,L.grid.sub);const tabw=$('#tabw');const drawTab=()=>{tabw.innerHTML=renderTab(tab.events,song.bars,tabw,L.strum);};drawTab();
  window.onresize=()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if(location.hash.startsWith('#/lesson/'+id))drawTab();},200);};
  const save=()=>{const ls=Store.get('lset',{});ls[id]=st;Store.set('lset',ls);};
  const opts=()=>({source:'lesson',lessonId:id,title:L.isStd?L.title:`Lesson ${L.num} · ${L.title}`,href:L.href||`#/lesson/${id}`,bpm:st.bpm,style:L.style||'swing',swing:0.64,straight:!!L.straight,ring:L.ring||0,compInst:'piano',
@@ -1708,7 +1752,7 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
  function onUI(e){if(!$('#scr'))return;
   if(e.type==='note'){clearOn();const g=$('#tn'+e.idx);if(g){g.classList.add('on');lastOn.push(g);}
    e.ev.notes.forEach(n=>{const d=$(`#vd-${n.s}-${n.f}`);if(d){d.classList.remove('ghost');d.classList.add('on');lastOn.push(d);ripple(d);}const s=svg.querySelector('.s'+n.s);if(s){s.classList.remove('vib');s.getBoundingClientRect();s.classList.add('vib');}});}
-  else if(e.type==='beat'){$$('#beats i').forEach((b,k)=>{b.className=k===e.beat?'on':'';});
+  else if(e.type==='beat'){if(e.beat===0&&L.grid)highlightGridBar(e.bar);$$('#beats i').forEach((b,k)=>{b.className=k===e.beat?'on':'';});
    let acc=0,cur=song.bars[e.bar].chords[0];for(const c of song.bars[e.bar].chords){if(e.beat>=acc)cur=c;acc+=c.beats;}
    $('#cNow').textContent=pretty(cur.sym);$('#bNow').textContent=`${e.bar+1} / ${song.bars.length}`;if(e.beat===0)$('#cap').textContent=L.cues[e.bar]||'';
    $('#prog').style.width=((e.bar*4+e.beat+1)/(song.bars.length*4)*100)+'%';}
@@ -2137,15 +2181,16 @@ VIEWS.transcribe=()=>{const O=Object.assign({mode:'melody',quant:0.5,pref:5,clic
    <div class="muted">${res.kind==='melody'?`${res.count} notes · `:''}${res.nBars} bars · ≈ ${res.bpm} BPM · key ${keyName}${res.kind==='melody'&&Math.abs(res.off)>0.15?` · recording tuned ${res.off>0?'+':''}${Math.round(res.off*100)} ¢ (corrected)`:''}</div></div>
    <div class="row" style="gap:8px"><button class="btn pri" id="tplay">${ic('play',1)} Play tab</button>${tg('tband','Band',false)}${tg('tloop','Loop',false)}</div></div>
    <label class="f">Playback tempo · <b id="tbv">${res.bpm} BPM</b><input type="range" id="tbpm" min="40" max="240" value="${res.bpm}"></label>
+   ${gridCard([{name:'',bars:res.chords}],TR.name||'My transcription',(res.kind==='melody'?'Suggested harmony':'Detected chords')+' · '+keyName+' · ≈ '+res.bpm+' BPM','gridT')}
    <div class="tabwrap"><div class="tabhead"><h3>Tab</h3><span class="hint">${res.kind==='melody'?'Suggested chords are shown above each bar':'Comping voicings for the detected chords'}</span></div><div id="ttab"></div></div>
    ${res.kind==='chords'?`<div class="cdgrid">${res.shapes.map(sh=>{const p=parseChord(sh.name);return `<div class="ccard">${chordDiagram(sh.frets,{root:p.root,q:p.q,name:sh.name})}<b>${pretty(sh.name)}</b><button class="btn sm" data-strum="${sh.frets.map(f=>f==null?'':f).join(',')}">${ic('play',1)} Hear</button></div>`;}).join('')}</div>`:''}
    <div class="row" style="gap:8px;flex-wrap:wrap"><label class="f" style="flex:1;min-width:200px">Title<input type="text" id="ttitle" value="${(TR.name||'My transcription').replace(/"/g,'')}"></label></div>
    <div class="row" style="gap:8px"><button class="btn pri" id="tsave">${ic('book')} Save as lesson (video, tab & soundtrack)</button><button class="btn" id="ttxt">${ic('dl')} Download tab (.txt)</button><button class="btn" id="twav">${ic('dl')} Tab audio (WAV)</button><a class="btn" href="#/jam/custom" id="tjam">${ic('jam')} Jam on the chords</a></div>
    <p class="hint">Automatic transcription is a starting point: check it by ear and correct any wrong notes or rhythms. Clean, single-instrument recordings at a steady tempo give the best results. In a noisy room, set sensitivity to “Low” and type the tempo (or record with the click) — noise can make the auto tempo double.</p></div>`;
-  const tw=$('#ttab');const draw=()=>{tw.innerHTML=renderTab(tab.events,song.bars,tw,res.kind==='chords');};draw();window.onresize=()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if($('#ttab'))draw();},200);};
+  mountGrid('gridT',[{name:'',bars:res.chords}],TR.name||'My transcription',(res.kind==='melody'?'Suggested harmony':'Detected chords')+' · '+keyName);const tw=$('#ttab');const draw=()=>{tw.innerHTML=renderTab(tab.events,song.bars,tw,res.kind==='chords');};draw();window.onresize=()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if($('#ttab'))draw();},200);};
   let bpm=res.bpm,lastOn=null;
   const opts=()=>({source:'transcribe',title:'Audio → Tab',href:'#/transcribe',bpm,style:'pop',straight:true,swing:0.5,compInst:'piano',parts:{guitar:true,bass:$('#tband').checked,drums:$('#tband').checked,comp:$('#tband').checked&&res.kind==='melody'},loop:$('#tloop').checked,countIn:true,click:false,mix:Store.get('mix',MIX_DEFAULT),
-   onUI:e=>{if(e.type==='note'){if(lastOn)lastOn.classList.remove('on');const g=$('#tn'+e.idx);if(g){g.classList.add('on');lastOn=g;}}},onStop:()=>{if($('#tplay'))$('#tplay').innerHTML=`${ic('play',1)} Play tab`;if(lastOn)lastOn.classList.remove('on');}});
+   onUI:e=>{if(e.type==='beat'&&e.beat===0)highlightGridBar(e.bar);if(e.type==='note'){if(lastOn)lastOn.classList.remove('on');const g=$('#tn'+e.idx);if(g){g.classList.add('on');lastOn=g;}}},onStop:()=>{if($('#tplay'))$('#tplay').innerHTML=`${ic('play',1)} Play tab`;if(lastOn)lastOn.classList.remove('on');}});
   $('#tplay').onclick=()=>{if(TP.playing&&TP.o.source==='transcribe'){tpStop();return;}tpStart(song,opts());$('#tplay').innerHTML=`${ic('stop',1)} Stop`;};
   $('#tbpm').oninput=e=>{bpm=+e.target.value;$('#tbv').textContent=bpm+' BPM';if(TP.playing&&TP.o.source==='transcribe')TP.o.bpm=bpm;};
   $('#ttxt').onclick=()=>{const title=$('#ttitle').value||'Transcription';let txt;if(res.kind==='melody')txt=asciiTab(res.ev,res.nBars,title,bpm)+'Suggested chords: '+res.chords.join(' | ')+'\n';else txt=`${title}\nTempo ≈ ${bpm} BPM · key ${keyName}\n\nChords: ${res.chords.join(' | ')}\n\nShapes (low E → high e):\n`+res.shapes.map(s=>`${s.name.padEnd(9)} ${s.frets.map(f=>f==null?'x':f).join(' ')}`).join('\n')+'\n';
@@ -2181,7 +2226,7 @@ function buildStdLesson(t){const C=chartFor(t);if(!C)return null;const sl=slugOf
  const L={id:'std-'+sl,isStd:true,href:'#/standard/'+sl,std:{slug:sl,composer:meta[1],year:meta[2]},title:t,mins:Math.max(5,Math.round(bars.length*4/(C.bpm||120)*4)),bpm:C.bpm||120,style,straight:style==='pop',chords:bars,jam:bars,
   tab:hasMel?C.melody:comp.tab,comp:hasMel,band:C.band===false?false:undefined,cues,
   html:`<p><b>${t}</b> (${meta[1]}, ${meta[2]}). Key: <b>${pretty(C.key||'—')}</b>. Form: <b>${C.form||bars.length+' bars'}</b>${user?' — <i>your own chart</i>':''}.</p><p>${trn?(hasMel?'This tab was <b>transcribed from your audio</b>. The chords above each bar are suggested harmonies — turn on “Band” to hear them, or edit them with “Edit chart”.':'These chords were <b>detected from your audio</b>; the tab is a comping arrangement using the closest voicings.'):hasMel?'This traditional melody is in the public domain, so the tab is the <b>melody</b>, with a piano and rhythm section comping the changes.':'The tab is a <b>comping arrangement</b> of the changes, using the closest voicings so your hand moves as little as possible. The band plays bass and drums, and the video shows every shape. The melody is copyrighted and not included: learn it by ear from a recording or a fake book, then play it over this soundtrack.'}</p><p class="hint">Charts are common lead-sheet versions, sometimes simplified; recordings vary. Use “Edit chart” to adjust any chord — the tab, shapes and soundtrack update automatically.</p>`,
-  table:{title:'Chord chart',head:['Section','Bars','Changes'],rows:(()=>{let n=1;return secs.map(s=>{const r=[s.name||'—',`${n}–${n+s.bars.length-1}`,s.bars.map(pretty).join(' | ')];n+=s.bars.length;return r;});})()},
+  grid:{secs,title:t,sub:[meta[1]&&meta[1]!=='—'?`${meta[1]} · ${meta[2]}`:(trn?'Transcribed from audio':''),C.key?'Key '+pretty(C.key):'',C.form||''].filter(Boolean).join(' · ')},
   keys:[`Key: ${pretty(C.key||'—')}`,`Form: ${C.form||bars.length+' bars'}`,`${comp.shapes.length} chord shapes`,hasMel?'Tab = melody':'Tab = comping; melody by ear'],
   usage:apps.length?apps:['Apply chord tones, guide tones and the concepts of each module to these changes'],
   drills:trn?['Play along with the guitar track at a slow tempo, then mute it and play alone','Compare with your original recording and fix any wrong notes in your own copy','Turn on the band and improvise over the suggested chords']:['Play the comping tab with the band, then mute the guitar track and comp on your own','Play only the guide tones (3rds and 7ths) through the form','Improvise one chorus over the soundtrack using the concepts listed above'],
@@ -2201,12 +2246,55 @@ VIEWS.stdedit=sl=>{const t=titleOfSlug(sl);if(!t){location.hash='#/repertoire';r
   if(!parseChart(c.chart).flatMap(s=>s.bars).length){toast('Add at least one bar of chords');return;}const all=Store.get('stdCharts',{});all[sl]=c;Store.set('stdCharts',all);toast('Chart saved');location.hash='#/standard/'+sl;if(location.hash==='#/standard/'+sl)route();};
  if($('#sreset'))$('#sreset').onclick=()=>{const all=Store.get('stdCharts',{});delete all[sl];Store.set('stdCharts',all);toast('Built-in chart restored');location.hash='#/standard/'+sl;if(location.hash==='#/standard/'+sl)route();};};
 
+// ---------- CHORD GRIDS (grilles harmoniques) ----------
+function gridCellHTML(bar,prev,i){const syms=bar.trim().split(/\s+/).filter(Boolean);const same=prev!=null&&bar.trim()===prev.trim();
+ let inner;if(same)inner='<span class="gs">%</span>';else if(syms.length===1)inner=`<span class="g1">${pretty(syms[0])}</span>`;
+ else if(syms.length===2)inner=`<svg class="gdiag" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="100" y1="0" x2="0" y2="100"/></svg><span class="g2a">${pretty(syms[0])}</span><span class="g2b">${pretty(syms[1])}</span>`;
+ else inner=`<span class="g4">${syms.map(s=>`<i>${pretty(s)}</i>`).join('')}</span>`;
+ return `<div class="gcell" data-bar="${i}">${inner}</div>`;}
+function gridHTML(secs,title,sub,opts={}){let n=0;const per=opts.per||8;
+ return `<div class="grille">${title?`<div class="gtitle">${title}</div>`:''}${sub?`<div class="gsub">${sub}</div>`:''}${secs.map(s=>{let prev=null;const cells=s.bars.map(b=>{const h=gridCellHTML(b,prev,n++);prev=b;return h;}).join('');
+  return `${s.name&&secs.length>1?`<div class="gsec">${s.name}</div>`:''}<div class="ggrid" style="--per:${per}">${cells}</div>`;}).join('')}</div>`;}
+function gridCanvas(secs,title,sub){const per=8,cw=170,ch=118,pad=50,secH=40;const rows=secs.reduce((a,s)=>a+Math.ceil(s.bars.length/per),0);const nSec=secs.filter(s=>s.name&&secs.length>1).length;
+ const W=pad*2+per*cw,H=140+rows*ch+nSec*secH+pad;const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+ g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#111';g.textAlign='center';g.textBaseline='middle';g.font='600 54px Georgia,serif';g.fillText(title||'',W/2,60);
+ if(sub){g.font='24px Georgia,serif';g.fillStyle='#555';g.fillText(sub,W/2,108);}let y=140;g.lineWidth=3;g.strokeStyle='#111';
+ secs.forEach(s=>{if(s.name&&secs.length>1){g.textAlign='left';g.font='700 26px Georgia,serif';g.fillStyle='#8a5a00';g.fillText(s.name,pad,y+secH/2);y+=secH;}let prev=null;
+  s.bars.forEach((b,k)=>{const c=k%per,x=pad+c*cw;if(k&&c===0)y+=ch;g.strokeRect(x,y,cw,ch);const syms=b.trim().split(/\s+/).filter(Boolean);const same=prev!=null&&b.trim()===prev.trim();prev=b;g.fillStyle='#111';g.textAlign='center';
+   const fit=(t,max,size)=>{let sz=size;do{g.font=`${sz}px Georgia,serif`;sz-=2;}while(g.measureText(t).width>max&&sz>14);};
+   if(same){fit('%',cw,46);g.fillText('%',x+cw/2,y+ch/2);}
+   else if(syms.length===1){const t=pretty(syms[0]);fit(t,cw-16,44);g.fillText(t,x+cw/2,y+ch/2);}
+   else if(syms.length===2){g.lineWidth=1.5;g.beginPath();g.moveTo(x+cw,y);g.lineTo(x,y+ch);g.stroke();g.lineWidth=3;const a=pretty(syms[0]),bb=pretty(syms[1]);fit(a,cw*0.55,32);g.fillText(a,x+cw*0.3,y+ch*0.3);fit(bb,cw*0.55,32);g.fillText(bb,x+cw*0.7,y+ch*0.72);}
+   else{syms.slice(0,4).forEach((t,i)=>{const tt=pretty(t);fit(tt,cw*0.45,26);g.fillText(tt,x+cw*(i%2?0.74:0.26),y+ch*(i<2?0.3:0.72));});}});
+  y+=ch;});return cv;}
+function gridCard(secs,title,sub,id){return `<div class="card gcard" id="${id||'gridCard'}"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>Chord grid · Grille harmonique</h3><div class="row" style="gap:6px"><button class="btn sm" data-gridpng>${ic('dl')} PNG</button><button class="btn sm" data-gridprint>Print</button></div></div>${gridHTML(secs,title,sub)}</div>`;}
+document.addEventListener('click',e=>{const p=e.target.closest('[data-gridpng],[data-gridprint]');if(!p)return;const card=p.closest('.gcard');if(!card||!card._grid)return;const G=card._grid;
+ if(p.hasAttribute('data-gridpng')){gridCanvas(G.secs,G.title,G.sub).toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=slugOf(G.title||'grid')+'-grille.png';document.body.appendChild(a);a.click();a.remove();},'image/png');}
+ else{const w=window.open('','_blank');if(!w){toast('Pop-up blocked — use PNG instead');return;}w.document.write(`<!doctype html><title>${G.title}</title><style>body{font-family:Georgia,serif;margin:24px}img{width:100%}</style><img src="${gridCanvas(G.secs,G.title,G.sub).toDataURL()}" onload="setTimeout(()=>print(),200)">`);w.document.close();}});
+function mountGrid(id,secs,title,sub){const c=$('#'+id);if(c)c._grid={secs,title,sub};}
+function highlightGridBar(i){$$('.gcell.on').forEach(x=>x.classList.remove('on'));const c=$(`.gcell[data-bar="${i}"]`);if(c)c.classList.add('on');}
+VIEWS.grids=(sel)=>{const titles=[...new Set([...Object.values(REPERTOIRE).flat().map(r=>r[0]),...Store.get('mySongs',[])])].filter(t=>hasChart(t)).sort((a,b)=>a.replace(/^The /,'').localeCompare(b.replace(/^The /,'')));
+ const cur=sel&&titleOfSlug(sel)&&hasChart(titleOfSlug(sel))?titleOfSlug(sel):titles[0];const my=new Set(Store.get('mySongs',[]));
+ V(`<div class="crumbs"><a href="#/repertoire">Repertoire</a> › Chord grids</div><div class="eyebrow">Grilles harmoniques</div><h1>Chord Grids</h1><p class="muted" style="max-width:700px">Every standard with a chart — and every song you transcribed — as a classic one-bar-per-box grid. “%” repeats the previous bar; a diagonal splits a bar between two chords.</p>
+ <div class="card" style="margin:14px 0;display:grid;gap:10px"><input type="text" id="gq" placeholder="Search ${titles.length} grids…"><div class="chips" id="glist">${titles.map(t=>`<a class="chip ${t===cur?'on':''}" data-t="${t.toLowerCase()}" href="#/grids/${slugOf(t)}">${my.has(t)?'🎙 ':''}${t}</a>`).join('')}</div></div><div id="gview"></div>`);
+ $('#gq').oninput=e=>{const q=e.target.value.toLowerCase();$$('#glist .chip').forEach(c=>c.style.display=c.dataset.t.includes(q)?'':'none');};
+ if(!cur){$('#gview').innerHTML='<p class="muted">No charts yet.</p>';return;}
+ const C=chartFor(cur);const secs=parseChart(C.chart);const meta=Object.values(REPERTOIRE).flat().find(r=>r[0]===cur);const sub=[meta?`${meta[1]} · ${meta[2]}`:(C.transcribed?'Transcribed from audio':''),C.key?'Key '+pretty(C.key):'',C.form||''].filter(Boolean).join(' · ');
+ $('#gview').innerHTML=gridCard(secs,cur,sub,'gridMain')+`<div class="row" style="margin-top:12px;gap:8px"><a class="btn pri" href="#/standard/${slugOf(cur)}">${ic('play',1)} Tab, shapes & soundtrack</a><a class="btn" href="#/stdedit/${slugOf(cur)}">✎ Edit chart</a></div>`;mountGrid('gridMain',secs,cur,sub);};
+// Android app: save downloads through the native file system and share sheet
+(function(){const orig=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){const C=window.Capacitor;const P=C&&C.Plugins;
+ if(this.download&&C&&C.isNativePlatform&&C.isNativePlatform()&&P&&P.Filesystem){const name=this.download,href=this.href;
+  fetch(href).then(r=>r.blob()).then(b=>new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.readAsDataURL(b);})).then(async data=>{
+   try{const w=await P.Filesystem.writeFile({path:name,data,directory:'CACHE'});if(P.Share){await P.Share.share({title:name,url:w.uri,dialogTitle:'Save or share '+name});}else{await P.Filesystem.writeFile({path:name,data,directory:'DOCUMENTS'});toast('Saved to Documents/'+name);}}
+   catch(err){try{await P.Filesystem.writeFile({path:name,data,directory:'DOCUMENTS'});toast('Saved to Documents/'+name);}catch(e2){toast('Could not save the file');}}});return;}
+ return orig.call(this);};})();
+
 // ---------- REPERTOIRE ----------
-VIEWS.repertoire=()=>{const all={};MODS.forEach(M=>(REPERTOIRE[M.id]||[]).forEach(r=>{(all[r[0]]=all[r[0]]||{r,mods:[]}).mods.push(M);}));
+VIEWS.repertoire=()=>{const all={};MODS.forEach(M=>(REPERTOIRE[M.id]||[]).forEach(r=>{(all[r[0]]=all[r[0]]||{r,mods:[]}).mods.push(M);}));(REPERTOIRE.library||[]).forEach(r=>{all[r[0]]=all[r[0]]||{r,mods:[]};});
  const list=Object.values(all).sort((a,b)=>a.r[0].replace(/^The /,'').localeCompare(b.r[0].replace(/^The /,'')));
- V(`<div class="eyebrow">Repertoire</div><h1>Standards by Concept</h1><p class="muted" style="max-width:700px">${list.length} tunes, each linked to the modules whose concepts apply. ${list.filter(x=>hasChart(x.r[0])).length} include a chord chart, a comping tab, chord shapes and a full-band soundtrack. For the rest, paste the changes from your fake book and the app builds the same automatically.</p><div class="sp"></div>
- ${(()=>{const my=Store.get('mySongs',[]);return `<div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">My transcriptions</div><h3>${my.length?my.length+' saved':'Detect chords from a recording'}</h3></div><a class="btn sm pri" href="#/recognize/file">${ic('wave')} Chord recognition</a></div>${my.length?`<div class="chips" style="margin-top:10px">${my.map(t=>`<a class="chip" href="#/standard/${slugOf(t)}">${t}</a>`).join('')}</div>`:''}</div>`;})()}<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${list.map(({r,mods})=>{const pi=r[4]?PRESETS.findIndex(p=>p.name===r[4]):-1;return `<div class="card rep"><div class="rt2"><b style="font-family:var(--serif);font-size:18px">${r[0]}</b><small>${r[1]} · ${r[2]}</small></div>
-  <div class="chips" style="margin-top:10px">${mods.map(M=>`<a class="chip" href="#/lesson/${M.lessons[0].id}" style="border-color:${M.color}">M${M.num} · ${M.title.replace(/:.*/,'')}</a>`).join('')}</div><div class="row" style="margin-top:10px;gap:6px"><a class="btn sm ${hasChart(r[0])?'pri':''}" href="#/standard/${slugOf(r[0])}">${ic('chord')} ${hasChart(r[0])?'Tab, chords & soundtrack':'Add chart'}</a>${pi>=0?`<a class="btn sm" href="#/jam" data-preset="${pi}">${ic('jam')} Jam it</a>`:''}</div></div>`;}).join('')}</div>`);};
+ V(`<div class="eyebrow">Repertoire</div><h1>Standards by Concept</h1><p class="muted" style="max-width:700px">${list.length} tunes, linked to the modules whose concepts apply. ${list.filter(x=>hasChart(x.r[0])).length} include a chord chart, a comping tab, chord shapes and a full-band soundtrack. For the rest, paste the changes from your fake book and the app builds the same automatically.</p><div class="sp"></div>
+ ${(()=>{const my=Store.get('mySongs',[]);return `<div class="card" style="margin-bottom:16px"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">My transcriptions</div><h3>${my.length?my.length+' saved':'Detect chords from a recording'}</h3></div><div class="row" style="gap:6px"><a class="btn sm pri" href="#/grids">${ic('chord')} All chord grids</a><a class="btn sm" href="#/transcribe">${ic('rec')} Audio → Tab</a><a class="btn sm" href="#/recognize/file">${ic('wave')} Chord recognition</a></div></div>${my.length?`<div class="chips" style="margin-top:10px">${my.map(t=>`<a class="chip" href="#/standard/${slugOf(t)}">${t}</a>`).join('')}</div>`:''}</div>`;})()}<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${list.map(({r,mods})=>{const pi=r[4]?PRESETS.findIndex(p=>p.name===r[4]):-1;return `<div class="card rep"><div class="rt2"><b style="font-family:var(--serif);font-size:18px">${r[0]}</b><small>${r[1]} · ${r[2]}</small></div>
+  <div class="chips" style="margin-top:10px">${mods.length?mods.map(M=>`<a class="chip" href="#/lesson/${M.lessons[0].id}" style="border-color:${M.color}">M${M.num} · ${M.title.replace(/:.*/,'')}</a>`).join(''):`<span class="chip">Standards library</span>`}${hasChart(r[0])?`<a class="chip" href="#/grids/${slugOf(r[0])}">▦ Grid</a>`:''}</div><div class="row" style="margin-top:10px;gap:6px"><a class="btn sm ${hasChart(r[0])?'pri':''}" href="#/standard/${slugOf(r[0])}">${ic('chord')} ${hasChart(r[0])?'Tab, chords & soundtrack':'Add chart'}</a>${pi>=0?`<a class="btn sm" href="#/jam" data-preset="${pi}">${ic('jam')} Jam it</a>`:''}</div></div>`;}).join('')}</div>`);};
 
 // ---------- CHORD RECOGNITION ----------
 function fft(re,im){const n=re.length;for(let i=1,j=0;i<n;i++){let bit=n>>1;for(;j&bit;bit>>=1)j^=bit;j^=bit;if(i<j){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t;}}
@@ -2291,11 +2379,12 @@ VIEWS.recognize=(tab)=>{const T=tab||Store.get('recTab','file');Store.set('recTa
     <div class="card"><h3 style="margin-bottom:10px">Chord shapes detected</h3><div class="cdgrid">${uniq.slice(0,24).map(sym=>{const fr=shapeOf(sym);const p=parseChord(sym);return fr?`<div class="ccard">${chordDiagram(fr,{root:p.root,q:p.q,name:sym})}<b>${pretty(sym)}</b><small>${romanOf(sym,keyObj)}</small><button class="btn sm" data-strum="${fr.map(f=>f==null?'':f).join(',')}">${ic('play',1)} Hear</button></div>`:'';}).join('')}</div></div>
     <div class="card"><h3 style="margin-bottom:10px">Timeline</h3><div class="tblwrap" style="max-height:340px;overflow:auto"><table class="atbl" style="min-width:0"><thead><tr><th>Time</th><th>Chord</th><th>Function</th><th>Length</th></tr></thead><tbody>${segs.filter(s=>s.sym!=='N').map(g=>`<tr><td>${Math.floor(g.start/60)}:${String(Math.floor(g.start%60)).padStart(2,'0')}</td><td>${pretty(g.sym)}</td><td>${romanOf(g.sym,keyObj)}</td><td>${(g.end-g.start).toFixed(1)} s</td></tr>`).join('')}</tbody></table></div></div></div>
    <div class="card" style="margin-top:14px;display:grid;gap:12px"><h3>Chord chart (bars of 4/4)</h3><div class="two"><label class="f">Tempo (BPM)<input type="text" id="rbpm" value="${R.bpm}"></label><label class="f">Shift bar lines (beats)<select id="roff">${[0,1,2,3].map(n=>`<option value="${n}">${n}</option>`).join('')}</select></label></div>
-    <label class="f">Chart — edit freely<textarea id="rchart" rows="5"></textarea></label>
+    <div id="rgridw"></div><label class="f">Chart — edit freely<textarea id="rchart" rows="5"></textarea></label>
     <div class="row"><label class="f" style="flex:1">Title<input type="text" id="rtitle" value="${title.replace(/"/g,'')}"></label></div>
     <div class="row"><button class="btn pri" id="rsave">${ic('chord')} Save → tab, shapes & soundtrack</button><a class="btn" href="#/jam/custom" id="rjam">${ic('jam')} Send to Jam Room</button></a><button class="btn" id="rtxt">${ic('dl')} Chart (.txt)</button></div></div>`;
    const mkChart=()=>{const bars=segsToBars(segs,+$('#rbpm').value||R.bpm,R.phase,+$('#roff').value);$('#rchart').value=bars.length?bars.reduce((a,b,i)=>a+(i?(i%4===0?' |\n':' | '):'')+b,''):'';};mkChart();
-   $('#rbpm').onchange=mkChart;$('#roff').onchange=mkChart;
+   const drawRG=()=>{const bars=parseProg($('#rchart').value.replace(/\n/g,' '));$('#rgridw').innerHTML=bars.length?gridCard([{name:'',bars}],title,'Detected chords · '+keyName,'gridR'):'';if(bars.length)mountGrid('gridR',[{name:'',bars}],title,'Detected chords · '+keyName);};drawRG();$('#rchart').oninput=drawRG;
+   $('#rbpm').onchange=()=>{mkChart();drawRG();};$('#roff').onchange=()=>{mkChart();drawRG();};
    const au=$('#rau');$('#rtl').onclick=ev=>{const d=ev.target.closest('[data-i]');if(d){au.currentTime=segs[+d.dataset.i].start+0.01;au.play();}};
    let lastI=-1;const tick=()=>{if(!$('#rau'))return;const t=au.currentTime;$('#rcur').style.left=(t*scale)+'px';const i=segs.findIndex(g=>t>=g.start&&t<g.end);if(i!==lastI&&i>=0){lastI=i;$$('.rseg.on').forEach(x=>x.classList.remove('on'));const el=$(`.rseg[data-i="${i}"]`);if(el){el.classList.add('on');const w=$('#rtlw');if(!au.paused&&(el.offsetLeft<w.scrollLeft||el.offsetLeft>w.scrollLeft+w.clientWidth-60))w.scrollLeft=el.offsetLeft-40;}$('#rnow').textContent=segs[i].sym==='N'?'–':pretty(segs[i].sym);}REC.raf=requestAnimationFrame(tick);};REC.raf=requestAnimationFrame(tick);
    const chartStr=()=>$('#rchart').value.replace(/\n/g,' ');
@@ -2338,6 +2427,7 @@ VIEWS.tools=()=>{V(`<div class="eyebrow">Toolbox</div><h1>Practice Tools</h1><di
  <a class="tool" href="#/chords"><span class="ti">${ic('chord')}</span><span><b>Chord Library</b><small>All jazz voicings in 12 keys with audio</small></span></a>
  <a class="tool" href="#/fretboard"><span class="ti">${ic('fret')}</span><span><b>Fretboard Explorer</b><small>21 scales and every arpeggio across the neck</small></span></a>
  <a class="tool" href="#/ear"><span class="ti">${ic('ear')}</span><span><b>Ear Training</b><small>Intervals and chord qualities</small></span></a>
+ <a class="tool" href="#/grids"><span class="ti">${ic('grid')}</span><span><b>Chord Grids</b><small>Grilles harmoniques of every standard</small></span></a>
  <a class="tool" href="#/transcribe"><span class="ti">${ic('rec')}</span><span><b>Audio → Tab</b><small>Record or load audio and convert it to guitar tab</small></span></a>
  <a class="tool" href="#/recognize"><span class="ti">${ic('wave')}</span><span><b>Chord Recognition</b><small>Detect chords from songs, live audio or fingerings</small></span></a>
  <a class="tool" href="#/repertoire"><span class="ti">${ic('book')}</span><span><b>Repertoire</b><small>Standards linked to every concept</small></span></a>
@@ -2352,7 +2442,7 @@ function route(){const h=location.hash.replace(/^#\/?/,'')||'home';const [name,a
  if(TP.playing&&TP.o.source!=='jam'&&TP.o.href!==location.hash&&!(name==='lesson'&&arg===TP.o.lessonId))tpStop();
  if(MET.on&&name!=='metronome')metStop();if(name!=='tuner')tunerStop();if(name!=='recognize')recStop();if(name!=='transcribe')trStop();
  window.onresize=null;const key=name==='lesson'?'lessons':(name==='standard'||name==='stdedit')?'repertoire':name;
- $$('[data-r]').forEach(a=>a.classList.toggle('on',a.dataset.r===key||(key==='fretboard'||key==='ear'||key==='metronome'||key==='tuner'||key==='repertoire'||key==='recognize'||key==='transcribe')&&a.dataset.r==='tools'&&a.closest('#bottomNav')));
+ $$('[data-r]').forEach(a=>a.classList.toggle('on',a.dataset.r===key||(key==='fretboard'||key==='ear'||key==='metronome'||key==='tuner'||key==='repertoire'||key==='recognize'||key==='transcribe'||key==='grids')&&a.dataset.r==='tools'&&a.closest('#bottomNav')));
  (VIEWS[name]||VIEWS.home)(arg);window.scrollTo(0,0);}
 window.addEventListener('hashchange',route);
 route();

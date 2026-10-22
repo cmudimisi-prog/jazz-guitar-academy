@@ -1,6 +1,6 @@
 {
   "name": "jazz-guitar-academy",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "private": true,
   "description": "Jazz Guitar Academy \u2014 Android app (Capacitor wrapper of the offline web app)",
   "scripts": {
@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",
-    "@capacitor/core": "^6.1.2"
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/share": "^6.0.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.1.2"
