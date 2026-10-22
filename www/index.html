@@ -268,6 +268,17 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
 .chips a.chip{text-decoration:none}
 .rseg{position:absolute;top:6px;height:44px;border-radius:7px;background:var(--card2);border:1px solid var(--line);color:var(--ink);font:600 12px var(--serif);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;white-space:nowrap}
 .rseg.n{background:transparent;border-style:dashed;color:var(--muted)}.rseg.on{background:var(--brass);color:#1a1307;border-color:var(--brass2)}
+.quick{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.strobe{width:100%;max-width:340px;height:14px;border-radius:7px;overflow:hidden;background:var(--bg2);border:1px solid var(--line)}
+.strobe i{display:block;height:100%;width:200%;background:repeating-linear-gradient(90deg,var(--brass) 0 10px,transparent 10px 20px);opacity:.35}
+.strobe.run i{animation:strobe var(--sp,1s) linear infinite;animation-direction:var(--dir,normal);opacity:.9}.strobe.ok i{animation:none;background:repeating-linear-gradient(90deg,var(--ok) 0 10px,transparent 10px 20px)}
+@keyframes strobe{from{transform:translateX(0)}to{transform:translateX(-20px)}}
+.strBtns .btn.ok{border-color:var(--ok);color:var(--ok)}
+.recBox{display:flex;gap:16px;align-items:center}
+.recBtn{width:76px;height:76px;border-radius:50%;border:3px solid var(--rose);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.recBtn span{width:46px;height:46px;border-radius:50%;background:var(--rose);transition:.2s}.recBtn.on span{width:28px;height:28px;border-radius:6px;animation:recp 1.2s ease-in-out infinite}
+@keyframes recp{50%{opacity:.5}}
+.meter{height:8px;background:var(--bg2);border-radius:4px;overflow:hidden;margin:6px 0;border:1px solid var(--line)}.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--brass2),var(--rose));transition:width .08s}
 .hint{font-size:13px;color:var(--muted);line-height:1.5}
 .weekChart text{fill:var(--muted);font-size:10px;font-family:var(--sans);text-anchor:middle}
 .weekChart rect.b{fill:var(--brass)}
@@ -279,7 +290,7 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Works fully offline. Your progress is saved in this browser.</div>
+    <div class="sideFoot">Version 2.0 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1312,7 +1323,7 @@ function parseChart(str){return String(str).split('||').map(x=>x.trim()).filter(
 // =====================================================================
 const Store=(()=>{const KEY='jazzGuitarAcademy.v1';let mem={};try{const raw=localStorage.getItem(KEY);if(raw)mem=JSON.parse(raw)||{};}catch(e){}
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(mem));}catch(e){}};
- return {get:(k,d)=>(k in mem?mem[k]:d),set:(k,v)=>{mem[k]=v;save();},reset:()=>{mem={};save();}};})();
+ return {get:(k,d)=>(k in mem?mem[k]:d),set:(k,v)=>{mem[k]=v;save();},reset:()=>{mem={};save();},dump:()=>JSON.parse(JSON.stringify(mem)),load:o=>{mem=o;save();}};})();
 function dayKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function addPractice(sec){if(sec<5)return;const log=Store.get('log',{});const k=dayKey();log[k]=(log[k]||0)+Math.round(sec);Store.set('log',log);}
 function lastDays(n){const log=Store.get('log',{});const out=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);out.push({d,sec:log[dayKey(d)]||0});}return out;}
@@ -1500,7 +1511,7 @@ const ICP={home:'M3 11l9-7 9 7v9h-6v-6H9v6H3z',book:'M4 5a2 2 0 0 1 2-2h13v16H6a
  chord:'M6 3v18M10 3v18M14 3v18M18 3v18M6 7h12M6 12h12M6 17h12',fret:'M2 6h20M2 10h20M2 14h20M2 18h20M7 4v16M13 4v16M19 4v16',ear:'M7 9a5 5 0 1 1 10 0c0 3.5-3 4.5-3 7.5a3 3 0 0 1-6 0M10 9a2 2 0 0 1 4 0',
  metro:'M8 21h8L13.5 3h-3zM12 15l6-9',tools:'M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4',check:'M5 12.5l4.5 4.5L19 7',dl:'M12 3v12M7 10l5 5 5-5M4 20h16',
  back:'M15 18l-6-6 6-6',next:'M9 18l6-6-6-6',tap:'M12 3v4M5 8l2.5 2.5M19 8l-2.5 2.5M9 21l1-8h4l1 8z',
- play:'M7 4.5v15l12.5-7.5z',wave:'M3 12h2M7 8v8M11 4v16M15 7v10M19 10v4M21 12h0',tune:'M4 18a8 8 0 1 1 16 0M12 18l4-7M12 4v2M5 9l1.5 1M19 9l-1.5 1',stop:'M6 6h12v12H6z'};
+ play:'M7 4.5v15l12.5-7.5z',wave:'M3 12h2M7 8v8M11 4v16M15 7v10M19 10v4M21 12h0',rec:'M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zM19 11a7 7 0 0 1-14 0M12 18v3',tune:'M4 18a8 8 0 1 1 16 0M12 18l4-7M12 4v2M5 9l1.5 1M19 9l-1.5 1',stop:'M6 6h12v12H6z'};
 function ic(n,fill){return fill?`<svg viewBox="0 0 24 24" fill="currentColor"><path d="${ICP[n]}"/></svg>`:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${ICP[n]}"/></svg>`;}
 
 function fretboard(o){const from=o.from||0,to=o.to==null?12:o.to,w=o.w||820,dots=o.dots||[];const base=from===0?0:from-1;
@@ -1601,7 +1612,7 @@ function figHTML(F){
 //  VIEWS
 // =====================================================================
 const VIEWS={};
-const NAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam Room','jam'],['repertoire','Repertoire','book'],['chords','Chord Library','chord'],['fretboard','Fretboard','fret'],['recognize','Chord Recognition','wave'],['ear','Ear Training','ear'],['metronome','Metronome & Timer','metro'],['tuner','Tuner','tune']];
+const NAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam Room','jam'],['repertoire','Repertoire','book'],['chords','Chord Library','chord'],['fretboard','Fretboard','fret'],['transcribe','Audio → Tab','rec'],['recognize','Chord Recognition','wave'],['ear','Ear Training','ear'],['metronome','Metronome & Timer','metro'],['tuner','Guitar Tuner','tune']];
 const BNAV=[['home','Home','home'],['lessons','Lessons','book'],['jam','Jam','jam'],['chords','Chords','chord'],['tools','Tools','tools']];
 $('#sideNav').innerHTML=NAV.map(([r,l,i])=>`<a class="navlink" data-r="${r}" href="#/${r}">${ic(i)}${l}</a>`).join('');
 $('#bottomNav').innerHTML=BNAV.map(([r,l,i])=>`<a data-r="${r}" href="#/${r}">${ic(i)}${l}</a>`).join('');
@@ -1622,6 +1633,8 @@ VIEWS.home=()=>{const done=Store.get('done',{});const nDone=ALL.filter(l=>done[l
   <div class="card stat"><div class="v">${mins}<span style="font-size:16px"> min</span></div><div class="l">this week · ${today} min today</div></div>
   <div class="card stat"><div class="l" style="margin-bottom:4px">Last 7 days</div>${chart}</div>
  </div>
+ <div class="secHead"><h2>Quick tools</h2></div>
+ <div class="tools quick"><a class="tool" href="#/tuner"><span class="ti">${ic('tune')}</span><span><b>Guitar Tuner</b><small>Tune up before you play</small></span></a><a class="tool" href="#/transcribe"><span class="ti">${ic('rec')}</span><span><b>Audio → Tab</b><small>Record a melody, get the tab</small></span></a><a class="tool" href="#/recognize"><span class="ti">${ic('wave')}</span><span><b>Chord Recognition</b><small>Find the chords of a song</small></span></a><a class="tool" href="#/jam"><span class="ti">${ic('jam')}</span><span><b>Jam Room</b><small>Backing tracks in any key</small></span></a></div>
  <div class="secHead"><h2>Today’s 35-minute routine</h2></div>
  <div class="routine">
   <a class="rt" href="#/fretboard"><span class="n">1</span><span>Warm-up: arpeggios<small>5 min · Fretboard explorer</small></span></a>
@@ -1631,7 +1644,9 @@ VIEWS.home=()=>{const done=Store.get('done',{});const nDone=ALL.filter(l=>done[l
  </div>
  <div class="secHead"><h2>Your path</h2><a href="#/lessons" class="btn sm">All lessons ${ic('next')}</a></div>
  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">${LEVELS.map(Lv=>{const ls=Lv.mods.flatMap(id=>MODULES.find(m=>m.id===id).lessons);const d=ls.filter(l=>done[l.id]).length;const c=MODULES.find(m=>m.id===Lv.mods[0]).color;return `<a class="rt" href="#/lessons" style="border-left:3px solid ${c}"><span class="n" style="border-color:${c};color:${c}">${Lv.n}</span><span>${Lv.title}<small>${Lv.phase} · ${d}/${ls.length} lessons</small></span></a>`;}).join('')}</div>
- <p class="hint" style="margin-top:28px">Tip: everything is generated in your browser — save this page and it works without internet. Turn off your phone’s silent switch to hear audio. <a href="#" id="resetAll">Reset progress</a></p>`);
+ <p class="hint" style="margin-top:28px">Tip: everything is generated in your browser — save this page and it works without internet. Turn off your phone’s silent switch to hear audio. <a href="#" id="backupAll">Back up progress</a> · <label style="color:var(--brass2);cursor:pointer;text-decoration:underline">Restore backup<input type="file" id="restoreAll" accept=".json,application/json" hidden></label> · <a href="#" id="resetAll">Reset progress</a></p>`);
+ $('#backupAll').onclick=e=>{e.preventDefault();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(Store.dump())],{type:'application/json'}));a.download='jazz-guitar-academy-backup-'+dayKey()+'.json';a.click();toast('Backup downloaded');};
+ $('#restoreAll').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(typeof o!=='object'||!o)throw 0;Store.load(o);toast('Progress restored');route();}catch(err){toast('Not a valid backup file');}};
  $('#resetAll').onclick=e=>{e.preventDefault();if(confirm('Reset all progress, practice log and settings?')){Store.reset();route();toast('Progress reset');}};};
 
 // ---------- LESSONS ----------
@@ -1928,42 +1943,218 @@ VIEWS.metronome=()=>{Object.assign(MET,Store.get('met',{}));let taps=[];
  $('#tsave').onclick=()=>{const ms=cur();if(ms<5000){toast('Practise a little longer first!');return;}addPractice(ms/1000);TIMER.acc=0;TIMER.run=false;$('#tgo').textContent='Start';$('#tmr').textContent='00:00';toast(`Logged ${Math.round(ms/60000)} min of practice`);};};
 
 // ---------- TUNER ----------
+// YIN pitch detector (shared by the tuner and the audio → tab transcriber)
+function yinPitch(buf,sr,minF=60,maxF=1400,thr=0.12){const W=Math.floor(buf.length/2);const maxT=Math.min(W-1,Math.floor(sr/minF)),minT=Math.max(2,Math.floor(sr/maxF));
+ let rms=0;for(let i=0;i<buf.length;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/buf.length);if(rms<1e-4)return {f:0,conf:0,rms};
+ const d=new Float32Array(maxT+2);for(let t=1;t<=maxT+1;t++){let s=0;for(let j=0;j<W;j++){const v=buf[j]-buf[j+t];s+=v*v;}d[t]=s;}
+ const c=new Float32Array(maxT+2);c[0]=1;let run=0;for(let t=1;t<=maxT+1;t++){run+=d[t];c[t]=run>0?d[t]*t/run:1;}
+ let tau=-1;for(let t=minT;t<=maxT;t++){if(c[t]<thr){while(t+1<=maxT&&c[t+1]<c[t])t++;tau=t;break;}}
+ if(tau<0){let b=minT;for(let t=minT;t<=maxT;t++)if(c[t]<c[b])b=t;if(c[b]>0.35)return {f:0,conf:0,rms};tau=b;}
+ const a=c[tau-1],b=c[tau],e=c[tau+1];const den=a+e-2*b;const shift=den?0.5*(a-e)/den:0;return {f:sr/(tau+(Math.abs(shift)<1?shift:0)),conf:1-b,rms};}
+const TUNINGS={standard:['Standard (E A D G B E)',[40,45,50,55,59,64]],halfdown:['Half step down (E♭)',[39,44,49,54,58,63]],wholedown:['Whole step down (D)',[38,43,48,53,57,62]],dropd:['Drop D (D A D G B E)',[38,45,50,55,59,64]],dadgad:['DADGAD',[38,45,50,55,57,62]],openg:['Open G (D G D G B D)',[38,43,50,55,59,62]],opend:['Open D (D A D F♯ A D)',[38,45,50,54,57,62]],opene:['Open E (E B E G♯ B E)',[40,47,52,56,59,64]]};
 const TUN={stream:null,timer:null,refT:null};
 function tunerStop(){if(TUN.timer)clearInterval(TUN.timer);TUN.timer=null;if(TUN.stream){TUN.stream.getTracks().forEach(t=>t.stop());TUN.stream=null;}if(TUN.refT){clearInterval(TUN.refT);TUN.refT=null;}}
-function detectPitch(buf,sr){let n=buf.length,rms=0;for(let i=0;i<n;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/n);if(rms<0.008)return -1;
- let r1=0,r2=n-1;const th=0.2;for(let i=0;i<n/2;i++)if(Math.abs(buf[i])<th){r1=i;break;}for(let i=1;i<n/2;i++)if(Math.abs(buf[n-i])<th){r2=n-i;break;}
- const b=buf.slice(r1,r2);n=b.length;const c=new Float32Array(n);for(let lag=0;lag<n;lag++){let sum=0;for(let j=0;j<n-lag;j++)sum+=b[j]*b[j+lag];c[lag]=sum;}
- let d=0;while(d<n-1&&c[d]>c[d+1])d++;let mx=-1,mp=-1;for(let i=d;i<n;i++)if(c[i]>mx){mx=c[i];mp=i;}if(mp<=0)return -1;
- let T0=mp;const x1=c[T0-1]||0,x2=c[T0],x3=c[T0+1]||0;const a=(x1+x3-2*x2)/2,bb=(x3-x1)/2;if(a)T0=T0-bb/(2*a);return sr/T0;}
-VIEWS.tuner=()=>{const STR=[[6,'E',40],[5,'A',45],[4,'D',50],[3,'G',55],[2,'B',59],[1,'E',64]];
- V(`<div class="eyebrow">Practice tools</div><h1>Tuner</h1><p class="muted">Tune with your microphone, or match the reference tones by ear. Standard tuning: E A D G B E.</p><div class="sp"></div>
- <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(290px,1fr))">
- <div class="card metro"><div class="tuneNote" id="tn">–</div><div class="tuneHz" id="thz">— Hz</div>
-  <svg viewBox="0 0 240 130" width="100%" style="max-width:320px"><path d="M20 120 A100 100 0 0 1 220 120" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/><path d="M105 22 A100 100 0 0 1 135 22" fill="none" stroke="var(--ok)" stroke-width="10"/>
+function micStream(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return Promise.reject(new Error('nomic'));return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+VIEWS.tuner=()=>{const S=Object.assign({tuning:'standard',a4:440,mode:'auto',str:6},Store.get('tunerSet',{}));const save=()=>Store.set('tunerSet',S);let tuned={};
+ const strings=()=>TUNINGS[S.tuning][1];const fOf=m=>S.a4*Math.pow(2,(m-69)/12);const nm=m=>pretty(SHARP[((m%12)+12)%12])+(Math.floor(m/12)-1);
+ V(`<div class="eyebrow">Practice tools</div><h1>Guitar Tuner</h1><p class="muted" style="max-width:680px">Play one string at a time near your microphone. Auto mode detects which string you are playing; pick a string to lock onto it, or switch to Chromatic for any note. Works offline.</p><div class="sp"></div>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+ <div class="card metro">
+  <div class="row" style="justify-content:center;gap:8px"><span class="badge" id="tmode">${S.mode==='chromatic'?'Chromatic':S.mode==='auto'?'Auto string':'String '+S.str}</span><span class="badge" id="ttarget">–</span></div>
+  <div class="tuneNote" id="tn">–</div><div class="tuneHz" id="thz">— Hz</div>
+  <svg viewBox="0 0 240 132" width="100%" style="max-width:340px"><path d="M20 120 A100 100 0 0 1 220 120" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/><path d="M110 21 A100 100 0 0 1 130 21" fill="none" stroke="var(--ok)" stroke-width="10"/>
   ${[-50,-25,0,25,50].map(c=>{const a=(c/50)*70*Math.PI/180;return `<text x="${120+112*Math.sin(a)}" y="${120-112*Math.cos(a)}" fill="var(--muted)" font-size="9" text-anchor="middle">${c>0?'+':''}${c}</text>`;}).join('')}
   <line id="tneedle" x1="120" y1="120" x2="120" y2="30" stroke="var(--brass2)" stroke-width="3" stroke-linecap="round" style="transform-origin:120px 120px;transition:transform .12s"/><circle cx="120" cy="120" r="6" fill="var(--brass2)"/></svg>
-  <div id="tmsg" class="muted">Tap “Start microphone” and play a single open string.</div>
-  <button class="btn pri" id="tmic">${ic('tune')} Start microphone</button></div>
- <div class="card metro"><h2>Reference tones</h2><p class="hint" style="margin:0">Tap a string to hear its pitch; turn on Repeat to keep it sounding while you tune.</p>
-  <div class="strBtns">${STR.map(([s,n,m])=>`<button class="btn" data-ref="${m}" data-s="${s}"><b style="font-family:var(--serif);font-size:20px">${n}</b><small>${s}</small></button>`).join('')}</div>
-  ${tg('trep','Repeat tone',false)}
-  <p class="hint">On iPhone, turn off silent mode. The microphone needs your permission and works offline; if it is blocked, use the reference tones.</p></div></div>`);
- let refMidi=null;
- const playRef=m=>{const s=fx();if(!s)return;playGuitar(s,m,ACTX.currentTime+0.02,2.6,0.9);};
- $$('[data-ref]').forEach(b=>b.onclick=()=>{refMidi=+b.dataset.ref;$$('[data-ref]').forEach(x=>x.classList.toggle('on',x===b));playRef(refMidi);if(TUN.refT)clearInterval(TUN.refT);TUN.refT=null;if($('#trep').checked)TUN.refT=setInterval(()=>{if(!$('#trep')){clearInterval(TUN.refT);return;}playRef(refMidi);},2200);});
- $('#trep').onchange=e=>{if(TUN.refT){clearInterval(TUN.refT);TUN.refT=null;}if(e.target.checked&&refMidi!=null)TUN.refT=setInterval(()=>playRef(refMidi),2200);};
- $('#tmic').onclick=async()=>{if(TUN.stream){tunerStop();$('#tmic').innerHTML=`${ic('tune')} Start microphone`;$('#tmsg').textContent='Microphone off.';return;}
-  const c=ctx();if(!c)return;if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('#tmsg').textContent='Microphone not available in this browser — use the reference tones.';return;}
-  try{TUN.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}catch(err){$('#tmsg').textContent='Microphone permission was blocked — use the reference tones.';return;}
-  const src=c.createMediaStreamSource(TUN.stream);const an=c.createAnalyser();an.fftSize=2048;src.connect(an);const buf=new Float32Array(an.fftSize);
-  $('#tmic').innerHTML=`${ic('stop',1)} Stop microphone`;$('#tmsg').textContent='Listening… play one string at a time.';let hist=[];
-  TUN.timer=setInterval(()=>{if(!$('#tn')){tunerStop();return;}an.getFloatTimeDomainData(buf);const f=detectPitch(buf,c.sampleRate);if(f<60||f>1200)return;
-   hist.push(f);if(hist.length>4)hist.shift();const fs=[...hist].sort((a,b)=>a-b)[Math.floor(hist.length/2)];
-   const midi=69+12*Math.log2(fs/440);const nm=Math.round(midi);const cents=Math.round((midi-nm)*100);
-   $('#tn').textContent=pretty(SHARP[((nm%12)+12)%12]);$('#tn').style.color=Math.abs(cents)<=5?'var(--ok)':'var(--ink)';$('#thz').textContent=fs.toFixed(1)+' Hz · '+(cents>0?'+':'')+cents+' cents';
+  <div class="strobe" id="tstrobe"><i></i></div>
+  <div id="tmsg" class="muted" style="min-height:22px">Tap “Start tuner”, then pluck a single string.</div>
+  <button class="btn pri" id="tmic" style="min-width:200px">${ic('tune')} Start tuner</button>
+  <div class="strBtns" id="tstr"></div>
+  <div class="chips" style="justify-content:center"><button class="chip" data-mode="auto">Auto</button><button class="chip" data-mode="string">Lock string</button><button class="chip" data-mode="chromatic">Chromatic</button></div></div>
+ <div class="card" style="display:grid;gap:14px;align-content:start">
+  <label class="f">Tuning<select id="ttun">${Object.entries(TUNINGS).map(([k,v])=>`<option value="${k}" ${k===S.tuning?'selected':''}>${v[0]}</option>`).join('')}</select></label>
+  <label class="f">Reference pitch A4 · <b id="ta4v">${S.a4} Hz</b><input type="range" id="ta4" min="430" max="450" value="${S.a4}"></label>
+  <div><div class="flabel">Reference tones — tap a string to hear its target pitch</div><div class="strBtns" id="tref"></div></div>
+  ${tg('trep','Repeat reference tone',false)}
+  <p class="hint">Tips: tune <b>up</b> to each note (if sharp, go below and come back up). Mute the other strings with your fretting hand. On Android, allow microphone access when asked; on iPhone turn off silent mode to hear the reference tones.</p>
+  <div class="hint" id="tdone"></div></div></div>`);
+ const drawStrings=()=>{const st=strings();$('#tstr').innerHTML=st.map((m,i)=>`<button class="btn ${tuned[i]?'ok':''}" data-si="${i}"><b style="font-family:var(--serif);font-size:19px">${pretty(SHARP[m%12])}</b><small>${6-i}${tuned[i]?' ✓':''}</small></button>`).join('');
+  $('#tref').innerHTML=st.map((m,i)=>`<button class="btn" data-ref="${m}"><b style="font-family:var(--serif);font-size:17px">${pretty(SHARP[m%12])}</b><small>${nm(m)}</small></button>`).join('');
+  $$('#tstr [data-si]').forEach(b=>b.onclick=()=>{S.mode='string';S.str=6-(+b.dataset.si);save();upMode();});
+  $$('#tref [data-ref]').forEach(b=>b.onclick=()=>{refMidi=+b.dataset.ref;$$('#tref [data-ref]').forEach(x=>x.classList.toggle('on',x===b));playRef();if(TUN.refT){clearInterval(TUN.refT);TUN.refT=null;}if($('#trep').checked)TUN.refT=setInterval(playRef,2400);});
+  const n=Object.keys(tuned).length;$('#tdone').textContent=n?`${n}/6 strings in tune${n===6?' — ready to play! 🎸':''}`:'';};
+ const upMode=()=>{$$('[data-mode]').forEach(c=>c.classList.toggle('on',c.dataset.mode===S.mode));$('#tmode').textContent=S.mode==='chromatic'?'Chromatic':S.mode==='auto'?'Auto string':'String '+S.str;$$('#tstr [data-si]').forEach(b=>b.classList.toggle('on',S.mode==='string'&&6-(+b.dataset.si)===S.str));};
+ let refMidi=null;const playRef=()=>{if(refMidi==null||!$('#tref'))return;const s=fx();if(!s)return;const t=ACTX.currentTime+0.02;const o=ACTX.createOscillator(),g=ACTX.createGain();o.type='triangle';o.frequency.value=fOf(refMidi);g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.25,t+0.02);g.gain.setTargetAtTime(0,t+1.6,0.25);o.connect(g);g.connect(s.buses.guitar);o.start(t);o.stop(t+2.6);playGuitar(s,refMidi,t,2.2,0.7);};
+ drawStrings();upMode();
+ $$('[data-mode]').forEach(c=>c.onclick=()=>{S.mode=c.dataset.mode;save();upMode();});
+ $('#ttun').onchange=e=>{S.tuning=e.target.value;tuned={};save();drawStrings();upMode();};
+ $('#ta4').oninput=e=>{S.a4=+e.target.value;$('#ta4v').textContent=S.a4+' Hz';save();};
+ $('#trep').onchange=e=>{if(TUN.refT){clearInterval(TUN.refT);TUN.refT=null;}if(e.target.checked&&refMidi!=null)TUN.refT=setInterval(playRef,2400);};
+ $('#tmic').onclick=async()=>{if(TUN.stream){tunerStop();$('#tmic').innerHTML=`${ic('tune')} Start tuner`;$('#tmsg').textContent='Tuner off.';$('#tstrobe').classList.remove('run');return;}
+  const c=ctx();if(!c)return;try{TUN.stream=await micStream();}catch(err){$('#tmsg').textContent=err.message==='nomic'?'Microphone not available here — use the reference tones.':'Microphone permission was blocked — allow it in your browser/app settings, or use the reference tones.';return;}
+  const src=c.createMediaStreamSource(TUN.stream);const an=c.createAnalyser();an.fftSize=4096;src.connect(an);const buf=new Float32Array(an.fftSize);
+  $('#tmic').innerHTML=`${ic('stop',1)} Stop tuner`;$('#tmsg').textContent='Listening… pluck one string.';let hist=[],inTuneSince=0,lastStr=-1;
+  TUN.timer=setInterval(()=>{if(!$('#tn')){tunerStop();return;}an.getFloatTimeDomainData(buf);const R=yinPitch(buf,c.sampleRate,65,1200,0.12);
+   if(!R.f||R.conf<0.82){return;}hist.push(R.f);if(hist.length>5)hist.shift();const f=[...hist].sort((a,b)=>a-b)[hist.length>>1];
+   const midiF=69+12*Math.log2(f/S.a4);let target,si=-1;const st=strings();
+   if(S.mode==='chromatic')target=Math.round(midiF);
+   else if(S.mode==='string'){si=6-S.str;target=st[si];}
+   else{let best=0;st.forEach((m,i)=>{if(Math.abs(m-midiF)<Math.abs(st[best]-midiF))best=i;});si=best;target=st[si];}
+   if(si!==lastStr){hist=[f];lastStr=si;}
+   const cents=Math.round((midiF-target)*100);const ok=Math.abs(cents)<=4;
+   $('#tn').textContent=S.mode==='chromatic'?pretty(SHARP[((Math.round(midiF)%12)+12)%12]):pretty(SHARP[target%12]);$('#tn').style.color=ok?'var(--ok)':Math.abs(cents)>50?'var(--rose)':'var(--ink)';
+   $('#thz').textContent=`${f.toFixed(1)} Hz · target ${fOf(target).toFixed(1)} Hz · ${cents>0?'+':''}${cents} cents`;
+   $('#ttarget').textContent=si>=0?`String ${6-si} · ${nm(target)}`:nm(target);
    $('#tneedle').style.transform=`rotate(${Math.max(-50,Math.min(50,cents))/50*70}deg)`;
-   const close=STR.reduce((a,b)=>Math.abs(b[2]-midi)<Math.abs(a[2]-midi)?b:a);$$('[data-ref]').forEach(x=>x.classList.toggle('on',+x.dataset.ref===close[2]&&Math.abs(close[2]-midi)<1));
-   $('#tmsg').textContent=Math.abs(cents)<=5?'In tune ✓':cents<0?'Flat — tighten (tune up)':'Sharp — loosen below the note, then tune up';},90);};};
+   const sb=$('#tstrobe');sb.classList.add('run');sb.style.setProperty('--sp',(ok?0:Math.max(0.25,Math.min(4,40/Math.abs(cents))))+'s');sb.style.setProperty('--dir',cents<0?'reverse':'normal');sb.classList.toggle('ok',ok);
+   $$('#tstr [data-si]').forEach(b=>b.classList.toggle('on',+b.dataset.si===si));
+   if(Math.abs(midiF-target)>2.5&&S.mode!=='chromatic'){$('#tmsg').textContent=midiF<target?'Far too low — tighten the string':'Far too high — loosen below the note, then tune up';}
+   else $('#tmsg').textContent=ok?'In tune ✓':cents<0?`Flat ${-cents} ¢ — tighten (tune up)`:`Sharp ${cents} ¢ — loosen slightly, then tune up`;
+   if(ok&&si>=0){if(!inTuneSince)inTuneSince=Date.now();if(Date.now()-inTuneSince>700&&!tuned[si]){tuned[si]=1;drawStrings();upMode();}}else inTuneSince=0;},70);};};
+
+// ---------- AUDIO → TAB (record or load audio, transcribe to guitar tab) ----------
+const TR={stream:null,proc:null,chunks:[],len:0,buf:null,url:null,clickS:null,timer:null,meta:null,player:null};
+function trStop(){if(TR.proc){try{TR.proc.disconnect();}catch(e){}TR.proc=null;}if(TR.stream){TR.stream.getTracks().forEach(t=>t.stop());TR.stream=null;}if(TR.timer){clearInterval(TR.timer);TR.timer=null;}if(TR.clickS){endSession(TR.clickS);TR.clickS=null;}}
+async function resampleMono(buf,sr){const len=Math.ceil(buf.duration*sr);const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;const oc=new OAC(1,len,sr);const s=oc.createBufferSource();s.buffer=buf;s.connect(oc.destination);s.start();const r=await oc.startRendering();return r.getChannelData(0);}
+async function transcribeMelody(buf,opt,progress){
+ const SR=16000;const x=await resampleMono(buf,SR);const N=512,H=160;const nF=Math.max(0,Math.floor((x.length-N)/H)+1);const fr=[];
+ for(let i=0;i<nF;i++){const R=yinPitch(x.subarray(i*H,i*H+N),SR,72,1400,0.15);fr.push({t:(i*H+N/2)/SR,m:R.f?69+12*Math.log2(R.f/440):NaN,conf:R.conf,rms:R.rms});if(i%400===0){progress&&progress(i/nF*0.8);await new Promise(r=>setTimeout(r,0));}}
+ const rmsMax=Math.max(1e-6,...fr.map(f=>f.rms));const gate=rmsMax*(opt.sens||0.05);fr.forEach(f=>{f.v=f.rms>gate&&f.conf>0.7&&!isNaN(f.m);});
+ // global tuning offset
+ const devs=fr.filter(f=>f.v).map(f=>f.m-Math.round(f.m)).sort((a,b)=>a-b);const off=devs.length?devs[devs.length>>1]:0;
+ // median-smoothed pitch
+ const pm=fr.map((f,i)=>{if(!f.v)return NaN;const w=[];for(let j=-2;j<=2;j++){const g=fr[i+j];if(g&&g.v)w.push(g.m-off);}w.sort((a,b)=>a-b);return w[w.length>>1];});
+ // octave-error repair: compare with a wider median
+ pm.forEach((m,i)=>{if(isNaN(m))return;const w=[];for(let j=-8;j<=8;j++){const v=pm[i+j];if(!isNaN(v))w.push(v);}w.sort((a,b)=>a-b);const md=w[w.length>>1];if(Math.abs(m-md-12)<0.6)pm[i]=m-12;else if(Math.abs(md-m-12)<0.6)pm[i]=m+12;});
+ // onsets from energy rise
+ const db=fr.map(f=>20*Math.log10(f.rms+1e-9));const on=new Uint8Array(nF);let lastOn=-99;
+ for(let i=3;i<nF;i++){const prev=Math.min(db[i-1],db[i-2],db[i-3]);if(fr[i].rms>gate&&db[i]-prev>(opt.onsetDb||5)&&i-lastOn>6){on[i]=1;lastOn=i;}}
+ // segment into notes
+ const notes=[];let cur=null,gap=0;const close=()=>{if(cur&&cur.e-cur.s>=4){const ms=pm.slice(cur.s,cur.e).filter(v=>!isNaN(v)).sort((a,b)=>a-b);cur.m=Math.round(ms[ms.length>>1]);notes.push(cur);}cur=null;};
+ for(let i=0;i<nF;i++){const m=pm[i];if(isNaN(m)){if(cur&&++gap>3)close();continue;}gap=0;const r=Math.round(m);
+  if(!cur){cur={s:i,e:i+1,r};continue;}
+  if(on[i]&&i-cur.s>4){close();cur={s:i,e:i+1,r};continue;}
+  if(r!==cur.r){let k=0;while(k<4&&i+k<nF&&Math.round(pm[i+k])===r)k++;if(k>=3){close();cur={s:i,e:i+1,r};continue;}}
+  cur.e=i+1;}
+ close();
+ notes.forEach(n=>{n.t=fr[n.s].t-N/2/SR;n.te=fr[Math.min(nF-1,n.e)].t;while(n.m<40)n.m+=12;while(n.m>86)n.m-=12;n.vel=Math.max(...fr.slice(n.s,n.e).map(f=>f.rms))/rmsMax;});
+ const kept=notes.filter(n=>!(n.vel<0.18&&n.te-n.t<0.15)&&!(n.vel<0.1));
+ progress&&progress(0.9);return {notes:kept,off,dur:buf.duration};}
+function estimateGrid(notes,fixedBpm,quant=0.5){const ts=notes.map(n=>n.t);if(!ts.length)return {bpm:fixedBpm||100,t0:0};const ws=notes.map(n=>n.vel+0.3);const W=ws.reduce((a,b)=>a+b,0);
+ const coh=tau=>{let re=0,im=0;ts.forEach((t,i)=>{const a=2*Math.PI*t/tau;re+=ws[i]*Math.cos(a);im+=ws[i]*Math.sin(a);});return {c:Math.hypot(re,im)/W,ph:Math.atan2(im,re)};};
+ let tau,bpm;
+ if(fixedBpm){bpm=fixedBpm;tau=60/bpm*Math.min(1,quant);}
+ else{const sc=[];for(let t=0.09;t<=1.0;t*=1.01)sc.push({t,...coh(t)});const mx=Math.max(...sc.map(x=>x.c));
+  // the slowest pulse that still explains the onsets is the "tatum" (usually the eighth or quarter note)
+  const good=sc.filter(x=>x.c>=mx*0.88);const pk=good.reduce((a,b)=>b.t>a.t?b:a);let best=pk;sc.forEach(x=>{if(Math.abs(x.t-pk.t)/pk.t<0.04&&x.c>best.c)best=x;});tau=best.t;
+  const cands=[1,2,4].map(k=>60/(tau*k)).filter(b=>b>=56&&b<=190);bpm=cands.length?cands.reduce((a,b)=>Math.abs(Math.log2(b/100))<Math.abs(Math.log2(a/100))?b:a):60/tau;bpm=Math.round(bpm);
+  // refine tatum so it divides the rounded beat exactly
+  const k=Math.max(1,Math.round(60/bpm/tau));tau=60/bpm/k;}
+ const ph=coh(tau).ph;let off=((ph/(2*Math.PI))*tau%tau+tau)%tau;let t0=off;while(t0>ts[0]+tau*0.4)t0-=tau;while(t0+tau<=ts[0]+tau*0.4-1e-9&&t0<ts[0]-tau*0.5)t0+=tau;
+ // start bar 1 on the first note
+ t0=t0+Math.round((ts[0]-t0)/tau)*tau;return {bpm,t0};}
+function assignFrets(midis,pref,maxF=15){const cand=midis.map(m=>{const c=[];for(let s=6;s>=1;s--){const f=m-OPEN[s];if(f>=0&&f<=maxF)c.push({s,f});}return c.length?c:[{s:1,f:Math.max(0,Math.min(maxF,m-OPEN[1]))}];});
+ const node=p=>(p.f===0?0.15:Math.abs(p.f-pref)*0.06)+(p.f>12?0.4:0);const trans=(a,b)=>{if(a.f===0||b.f===0)return 0.25+0.08*Math.abs(a.s-b.s);const d=Math.abs(a.f-b.f);return 0.12*d+Math.max(0,d-3)*0.9+0.1*Math.abs(a.s-b.s);};
+ if(!cand.length)return [];let cost=cand[0].map(node),back=[];for(let i=1;i<cand.length;i++){const nc=[],bk=[];cand[i].forEach(b=>{let bi=0,bv=1e9;cand[i-1].forEach((a,k)=>{const v=cost[k]+trans(a,b);if(v<bv){bv=v;bi=k;}});nc.push(bv+node(b));bk.push(bi);});cost=nc;back.push(bk);}
+ let k=cost.indexOf(Math.min(...cost));const out=new Array(cand.length);for(let i=cand.length-1;i>=0;i--){out[i]=cand[i][k];if(i>0)k=back[i-1][k];}return out;}
+function durTokens(d){const T=[[4,'w'],[3,'h.'],[2,'h'],[1.5,'q.'],[1,'q'],[0.75,'e.'],[0.5,'e'],[0.25,'s']];const out=[];let r=Math.round(d*4)/4;while(r>=0.249){const t=T.find(x=>x[0]<=r+1e-6);out.push(t);r=Math.round((r-t[0])*4)/4;}return out;}
+function notesToTab(notes,grid,opts){const {bpm,t0}=grid;const beat=60/bpm,q=opts.quant||0.5;
+ let ev=notes.map(n=>({b:Math.max(0,Math.round((n.t-t0)/beat/q)*q),e:Math.round((n.te-t0)/beat/q)*q,m:n.m,vel:n.vel})).filter(e=>e.b>=0);
+ ev.sort((a,b)=>a.b-b.b||b.vel-a.vel);ev=ev.filter((e,i)=>i===0||e.b!==ev[i-1].b);
+ ev.forEach((e,i)=>{const nx=ev[i+1]?ev[i+1].b:Infinity;e.e=Math.min(Math.max(e.e,e.b+q),nx);if(e.e-e.b>4)e.e=e.b+4;});
+ const pos=assignFrets(ev.map(e=>e.m),opts.pref??5,opts.maxFret||15);ev.forEach((e,i)=>e.p=pos[i]);
+ const nBars=Math.max(1,Math.ceil((ev.length?ev[ev.length-1].e:4)/4-1e-9));const bars=[];
+ for(let b=0;b<nBars;b++){const toks=[];let cur=b*4;const inBar=ev.filter(e=>e.b>=b*4-1e-9&&e.b<b*4+4-1e-9);
+  inBar.forEach(e=>{if(e.b>cur+1e-9)durTokens(e.b-cur).forEach(t=>toks.push('r'+t[1]));const d=Math.min(e.e,b*4+4)-e.b;const dt=durTokens(d);toks.push(`${e.p.s}/${e.p.f}${dt[0][1]}`);dt.slice(1).forEach(t=>toks.push('r'+t[1]));cur=e.b+d;});
+  if(cur<b*4+4-1e-9)durTokens(b*4+4-cur).forEach(t=>toks.push('r'+t[1]));bars.push(toks.join(' '));}
+ return {tab:bars.join(' | '),nBars,ev};}
+function harmonize(ev,nBars){const hist=new Float32Array(12);ev.forEach(e=>hist[e.m%12]+=e.e-e.b);
+ const MAJ=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88],MIN=[6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+ const corr=(p,r)=>{const xs=[...Array(12)].map((_,i)=>hist[(i+r)%12]);const mx=xs.reduce((a,b)=>a+b)/12,mp=p.reduce((a,b)=>a+b)/12;let n=0,d1=0,d2=0;for(let i=0;i<12;i++){n+=(xs[i]-mx)*(p[i]-mp);d1+=(xs[i]-mx)**2;d2+=(p[i]-mp)**2;}return n/Math.sqrt(d1*d2||1);};
+ let key={r:0,minor:false,c:-2};for(let r=0;r<12;r++){const a=corr(MAJ,r),b=corr(MIN,r);if(a>key.c)key={r,minor:false,c:a};if(b>key.c)key={r,minor:true,c:b};}
+ const tonic=key.minor?(key.r+3)%12:key.r;const dia=[0,2,4,5,7,9,11].map(x=>(tonic+x)%12);const cands=REC_T.filter(t=>['maj','m','7','maj7','m7'].includes(t.q)&&dia.includes(t.r));
+ const chords=[];let prev=key.minor?recSym(key.r,'m'):recSym(key.r,'maj');
+ for(let b=0;b<nBars;b++){const h=new Float32Array(12);ev.filter(e=>e.b>=b*4&&e.b<b*4+4).forEach(e=>{h[e.m%12]+=(e.e-e.b)*((e.b%2===0)?1.4:1);});const tot=h.reduce((a,c)=>a+c,0);
+  if(tot<0.2){chords.push(prev);continue;}let best=null,bv=-1;cands.forEach(t=>{let s=0;for(let k=0;k<12;k++)s+=h[k]*t.v[k];s/=Math.sqrt(tot);if(t.r===tonic||t.r===key.r)s*=1.05;if(recSym(t.r,t.q)===prev)s*=1.08;if(t.q==='7'&&t.r!==(tonic+7)%12)s*=0.85;if(s>bv){bv=s;best=t;}});
+  prev=best?recSym(best.r,best.q):prev;chords.push(prev);}
+ return {chords,key};}
+function asciiTab(ev,nBars,title,bpm){const L=['e','B','G','D','A','E'];let out=`${title}\nTempo ≈ ${bpm} BPM · 4/4 · 1 column = 1/16 note · tuning E A D G B E\n\n`;
+ for(let r=0;r<nBars;r+=4){const lines=L.map(n=>n+'|');for(let b=r;b<Math.min(nBars,r+4);b++){for(let s=0;s<16;s++){const t=b*4+s/4;const e=ev.find(x=>Math.abs(x.b-t)<1e-6);for(let si=0;si<6;si++){const str=si+1;lines[si]+=(e&&e.p.s===str)?String(e.p.f).padEnd(3,'-'):'---';}}lines.forEach((l,i)=>lines[i]+='|');}out+=lines.join('\n')+'\n\n';}
+ return out;}
+VIEWS.transcribe=()=>{const O=Object.assign({mode:'melody',quant:0.5,pref:5,click:false,bpm:90,sens:0.05},Store.get('trSet',{}));const saveO=()=>Store.set('trSet',O);
+ V(`<div class="eyebrow">Record & transcribe</div><h1>Audio → Guitar Tab</h1><p class="muted" style="max-width:720px">Record yourself playing or singing a melody — or load a song file — and convert it into guitar tab you can read, play back, download and practise with the band. Everything runs offline on your device.</p>
+ <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(310px,1fr));margin-top:16px">
+ <div class="card" style="display:grid;gap:12px;align-content:start"><h3>1 · Record or load audio</h3>
+  <div class="recBox"><button class="recBtn" id="rbtn" aria-label="Record"><span></span></button><div><div class="timer" id="rtime" style="font-size:34px">00:00</div><div class="meter"><i id="rlev"></i></div><div class="muted" id="rlive" style="min-height:20px;font-size:13.5px">Tap the red button to record (max 4 min).</div></div></div>
+  ${tg('rclick','Count-in & click while recording (use headphones) — gives exact tempo',O.click)}
+  <label class="f" id="rbpmw" style="${O.click?'':'display:none'}">Click tempo · <b id="rbpmv">${O.bpm} BPM</b><input type="range" id="rbpm" min="50" max="200" value="${O.bpm}"></label>
+  <div class="row" style="gap:8px"><label class="btn" style="cursor:pointer">${ic('dl')} Load audio file<input type="file" id="rfile" accept="audio/*" hidden></label><span class="hint" id="rfname"></span></div>
+  <audio id="raudio" controls style="width:100%;display:none"></audio><div class="row" id="racts" style="gap:8px;display:none"><button class="btn sm" id="rwav">${ic('dl')} Save recording (WAV)</button></div></div>
+ <div class="card" style="display:grid;gap:12px;align-content:start"><h3>2 · Conversion settings</h3>
+  <div><div class="flabel">What to transcribe</div><div class="chips" id="rmode"><button class="chip" data-v="melody">Melody / single notes</button><button class="chip" data-v="chords">Chords (full songs)</button></div><p class="hint" id="rmodehint" style="margin:8px 0 0"></p></div>
+  <div class="two"><label class="f">Rhythm grid<select id="rq"><option value="0.5">Eighth notes</option><option value="0.25">16th notes</option><option value="1">Quarter notes</option></select></label>
+  <label class="f">Hand position<select id="rpref"><option value="2">Open position (frets 0–4)</option><option value="5">Low neck (frets 3–8)</option><option value="8">Middle (frets 6–11)</option><option value="12">High (frets 10–15)</option></select></label></div>
+  <div class="two"><label class="f">Tempo (BPM, blank = auto)<input type="text" id="rtempo" placeholder="auto"></label><label class="f">Note sensitivity<select id="rsens"><option value="0.02">High (quiet notes)</option><option value="0.05">Normal</option><option value="0.1">Low (ignore noise)</option></select></label></div>
+  <div class="two"><label class="f">From (s)<input type="text" id="rfrom" value="0"></label><label class="f">To (s, blank = end)<input type="text" id="rto" placeholder="end"></label></div>
+  <button class="btn pri" id="rconv" disabled>${ic('chord')} Convert to tab</button><div id="rprog" class="progress" style="display:none"><i></i></div></div></div>
+ <div id="rout"></div>`);
+ const hintMode=()=>{$('#rmodehint').innerHTML=O.mode==='melody'?'Best for one instrument or voice at a time: a guitar melody, a solo, a riff, humming or singing. Background music and chords confuse single-note detection.':'For full songs and band recordings: detects the chord changes and builds a comping tab with chord shapes (same engine as Chord Recognition).';$$('#rmode .chip').forEach(c=>c.classList.toggle('on',c.dataset.v===O.mode));};hintMode();
+ $('#rq').value=String(O.quant);$('#rpref').value=String(O.pref);$('#rsens').value=String(O.sens);
+ $$('#rmode .chip').forEach(c=>c.onclick=()=>{O.mode=c.dataset.v;saveO();hintMode();});
+ $('#rq').onchange=e=>{O.quant=+e.target.value;saveO();};$('#rpref').onchange=e=>{O.pref=+e.target.value;saveO();};$('#rsens').onchange=e=>{O.sens=+e.target.value;saveO();};
+ $('#rclick').onchange=e=>{O.click=e.target.checked;saveO();$('#rbpmw').style.display=O.click?'':'none';};$('#rbpm').oninput=e=>{O.bpm=+e.target.value;$('#rbpmv').textContent=O.bpm+' BPM';saveO();};
+ const setBuf=(buf,name,meta)=>{TR.buf=buf;TR.meta=meta||null;if(TR.url)URL.revokeObjectURL(TR.url);const blob=wavBlob(buf);TR.url=URL.createObjectURL(blob);TR.name=name;const a=$('#raudio');a.src=TR.url;a.style.display='block';$('#racts').style.display='flex';$('#rconv').disabled=false;$('#rfname').textContent=`${name} · ${buf.duration.toFixed(1)} s`;if(meta&&meta.bpm)$('#rtempo').value=meta.bpm;};
+ if(TR.buf)setBuf(TR.buf,TR.name||'Recording',TR.meta);
+ $('#rwav').onclick=()=>{if(!TR.url)return;const a=document.createElement('a');a.href=TR.url;a.download=slugOf(TR.name||'recording')+'.wav';a.click();};
+ $('#rfile').onchange=async e=>{const file=e.target.files[0];if(!file)return;const c=ctx();if(!c)return;try{const ab=await file.arrayBuffer();const buf=await new Promise((res,rej)=>{const p=c.decodeAudioData(ab,res,rej);if(p&&p.then)p.then(res,rej);});setBuf(buf,file.name.replace(/\.[^.]+$/,''));toast('Audio loaded');}catch(err){toast('Could not decode this audio file');}};
+ $('#rbtn').onclick=async()=>{const b=$('#rbtn');
+  if(TR.stream){// stop
+   const sr=ACTX.sampleRate;const all=new Float32Array(TR.len);let o=0;TR.chunks.forEach(ch=>{all.set(ch,o);o+=ch.length;});const meta=TR.recMeta;trStop();b.classList.remove('on');
+   const skip=meta&&meta.countIn?Math.floor(meta.countIn*sr):0;const data=all.subarray(Math.min(skip,all.length));if(data.length<sr*0.5){$('#rlive').textContent='Recording too short — try again.';return;}
+   const buf=ACTX.createBuffer(1,data.length,sr);buf.getChannelData(0).set(data);setBuf(buf,'Recording '+new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),meta&&meta.bpm?{bpm:meta.bpm}:null);$('#rlive').textContent='Recording ready — choose settings and tap Convert.';return;}
+  const c=ctx();if(!c)return;try{TR.stream=await micStream();}catch(err){$('#rlive').textContent=err.message==='nomic'?'Microphone not available in this browser — load a file instead.':'Microphone permission was blocked — allow it in settings, or load a file instead.';return;}
+  const src=c.createMediaStreamSource(TR.stream);const proc=c.createScriptProcessor(4096,1,1);const mute=c.createGain();mute.gain.value=0;src.connect(proc);proc.connect(mute);mute.connect(c.destination);
+  TR.proc=proc;TR.chunks=[];TR.len=0;const t0=c.currentTime;const maxLen=c.sampleRate*245;let lastPitch=0;
+  TR.recMeta=null;if(O.click){const beat=60/O.bpm;TR.clickS=newSession(LIVE,{click:1});TR.recMeta={bpm:O.bpm,countIn:4*beat};let k=0;const st=c.currentTime+0.05;const sched=()=>{while(TR.clickS&&st+k*beat<c.currentTime+0.4){click(TR.clickS,st+k*beat,k%4===0);k++;}};sched();TR.timer=setInterval(sched,100);}
+  proc.onaudioprocess=ev=>{const d=ev.inputBuffer.getChannelData(0);if(TR.len<maxLen){TR.chunks.push(new Float32Array(d));TR.len+=d.length;}
+   let pk=0;for(let i=0;i<d.length;i++){const a=Math.abs(d[i]);if(a>pk)pk=a;}const lv=$('#rlev');if(lv)lv.style.width=Math.min(100,pk*140)+'%';
+   const el=c.currentTime-t0;const tt=$('#rtime');if(tt){const shown=Math.max(0,el-(TR.recMeta?TR.recMeta.countIn:0));tt.textContent=(TR.recMeta&&el<TR.recMeta.countIn)?'Count-in '+(Math.floor(el/(60/O.bpm))+1):`${String(Math.floor(shown/60)).padStart(2,'0')}:${String(Math.floor(shown%60)).padStart(2,'0')}`;}
+   if(c.currentTime-lastPitch>0.12){lastPitch=c.currentTime;const R=yinPitch(d.subarray(0,2048),c.sampleRate,72,1400,0.15);const lb=$('#rlive');if(lb)lb.textContent=R.f&&R.conf>0.8?'Hearing '+pretty(SHARP[Math.round(69+12*Math.log2(R.f/440))%12])+' · '+R.f.toFixed(0)+' Hz':'Recording…';}
+   if(TR.len>=maxLen&&$('#rbtn'))$('#rbtn').click();};
+  b.classList.add('on');$('#rlive').textContent=O.click?'Count-in… then play':'Recording… tap again to stop';};
+ $('#rconv').onclick=async()=>{if(!TR.buf)return;const btn=$('#rconv');btn.disabled=true;$('#rprog').style.display='block';const bar=$('#rprog i');
+  try{let buf=TR.buf;const sr=buf.sampleRate;const a=Math.max(0,parseFloat($('#rfrom').value)||0);const bEnd=parseFloat($('#rto').value);const b=isNaN(bEnd)?buf.duration:Math.min(buf.duration,bEnd);
+   if(b-a<0.5){toast('Selection too short');return;}const maxSec=O.mode==='melody'?240:600;if(b-a>maxSec){toast(`Please select at most ${maxSec/60} minutes (use From/To)`);return;}
+   if(a>0||b<buf.duration){const n=Math.floor((b-a)*sr);const nb=ACTX.createBuffer(buf.numberOfChannels,n,sr);for(let ch=0;ch<buf.numberOfChannels;ch++)nb.getChannelData(ch).set(buf.getChannelData(ch).subarray(Math.floor(a*sr),Math.floor(a*sr)+n));buf=nb;}
+   const fixed=parseFloat($('#rtempo').value)||null;let res;
+   if(O.mode==='melody'){const T=await transcribeMelody(buf,{sens:O.sens},v=>bar.style.width=(v*100)+'%');if(!T.notes.length){$('#rout').innerHTML=`<div class="card" style="margin-top:14px">No clear notes found. Try “High” sensitivity, play louder or closer to the microphone, or switch to Chords mode for full songs.</div>`;return;}
+    const grid=estimateGrid(T.notes,fixed,O.quant);const TB=notesToTab(T.notes,grid,{quant:O.quant,pref:O.pref});const H=harmonize(TB.ev,TB.nBars);
+    res={kind:'melody',bpm:grid.bpm,tab:TB.tab,ev:TB.ev,nBars:TB.nBars,chords:H.chords,key:H.key,off:T.off,count:TB.ev.length};}
+   else{const R=await analyzeAudio(buf,v=>bar.style.width=(v*100)+'%');const bpm=fixed||R.bpm;const bars=segsToBars(R.segs,bpm,R.phase,0);if(!bars.length){$('#rout').innerHTML=`<div class="card" style="margin-top:14px">No chords detected — try a louder or clearer recording.</div>`;return;}
+    const G=genComp(bars,'swing');res={kind:'chords',bpm,tab:G.tab,chords:bars,nBars:bars.length,key:R.key,shapes:G.shapes};}
+   bar.style.width='100%';showRes(res);}catch(err){console.error(err);toast('Conversion failed: '+err.message);}finally{btn.disabled=false;setTimeout(()=>{const p=$('#rprog');if(p)p.style.display='none';},400);}};
+ function showRes(res){const keyName=pretty(FLAT[res.key.r])+(res.key.minor?' minor':' major');const tab=parseTab(res.tab);const song=buildSong(res.chords);song.melody=tab.events;
+  $('#rout').innerHTML=`<div class="card" style="margin-top:14px;display:grid;gap:12px"><div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">Result</div><h2>${res.kind==='melody'?'Melody tab':'Chord tab'}</h2>
+   <div class="muted">${res.kind==='melody'?`${res.count} notes · `:''}${res.nBars} bars · ≈ ${res.bpm} BPM · key ${keyName}${res.kind==='melody'&&Math.abs(res.off)>0.15?` · recording tuned ${res.off>0?'+':''}${Math.round(res.off*100)} ¢ (corrected)`:''}</div></div>
+   <div class="row" style="gap:8px"><button class="btn pri" id="tplay">${ic('play',1)} Play tab</button>${tg('tband','Band',false)}${tg('tloop','Loop',false)}</div></div>
+   <label class="f">Playback tempo · <b id="tbv">${res.bpm} BPM</b><input type="range" id="tbpm" min="40" max="240" value="${res.bpm}"></label>
+   <div class="tabwrap"><div class="tabhead"><h3>Tab</h3><span class="hint">${res.kind==='melody'?'Suggested chords are shown above each bar':'Comping voicings for the detected chords'}</span></div><div id="ttab"></div></div>
+   ${res.kind==='chords'?`<div class="cdgrid">${res.shapes.map(sh=>{const p=parseChord(sh.name);return `<div class="ccard">${chordDiagram(sh.frets,{root:p.root,q:p.q,name:sh.name})}<b>${pretty(sh.name)}</b><button class="btn sm" data-strum="${sh.frets.map(f=>f==null?'':f).join(',')}">${ic('play',1)} Hear</button></div>`;}).join('')}</div>`:''}
+   <div class="row" style="gap:8px;flex-wrap:wrap"><label class="f" style="flex:1;min-width:200px">Title<input type="text" id="ttitle" value="${(TR.name||'My transcription').replace(/"/g,'')}"></label></div>
+   <div class="row" style="gap:8px"><button class="btn pri" id="tsave">${ic('book')} Save as lesson (video, tab & soundtrack)</button><button class="btn" id="ttxt">${ic('dl')} Download tab (.txt)</button><button class="btn" id="twav">${ic('dl')} Tab audio (WAV)</button><a class="btn" href="#/jam/custom" id="tjam">${ic('jam')} Jam on the chords</a></div>
+   <p class="hint">Automatic transcription is a starting point: check it by ear and correct any wrong notes or rhythms. Clean, single-instrument recordings at a steady tempo give the best results. In a noisy room, set sensitivity to “Low” and type the tempo (or record with the click) — noise can make the auto tempo double.</p></div>`;
+  const tw=$('#ttab');const draw=()=>{tw.innerHTML=renderTab(tab.events,song.bars,tw,res.kind==='chords');};draw();window.onresize=()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if($('#ttab'))draw();},200);};
+  let bpm=res.bpm,lastOn=null;
+  const opts=()=>({source:'transcribe',title:'Audio → Tab',href:'#/transcribe',bpm,style:'pop',straight:true,swing:0.5,compInst:'piano',parts:{guitar:true,bass:$('#tband').checked,drums:$('#tband').checked,comp:$('#tband').checked&&res.kind==='melody'},loop:$('#tloop').checked,countIn:true,click:false,mix:Store.get('mix',MIX_DEFAULT),
+   onUI:e=>{if(e.type==='note'){if(lastOn)lastOn.classList.remove('on');const g=$('#tn'+e.idx);if(g){g.classList.add('on');lastOn=g;}}},onStop:()=>{if($('#tplay'))$('#tplay').innerHTML=`${ic('play',1)} Play tab`;if(lastOn)lastOn.classList.remove('on');}});
+  $('#tplay').onclick=()=>{if(TP.playing&&TP.o.source==='transcribe'){tpStop();return;}tpStart(song,opts());$('#tplay').innerHTML=`${ic('stop',1)} Stop`;};
+  $('#tbpm').oninput=e=>{bpm=+e.target.value;$('#tbv').textContent=bpm+' BPM';if(TP.playing&&TP.o.source==='transcribe')TP.o.bpm=bpm;};
+  $('#ttxt').onclick=()=>{const title=$('#ttitle').value||'Transcription';let txt;if(res.kind==='melody')txt=asciiTab(res.ev,res.nBars,title,bpm)+'Suggested chords: '+res.chords.join(' | ')+'\n';else txt=`${title}\nTempo ≈ ${bpm} BPM · key ${keyName}\n\nChords: ${res.chords.join(' | ')}\n\nShapes (low E → high e):\n`+res.shapes.map(s=>`${s.name.padEnd(9)} ${s.frets.map(f=>f==null?'x':f).join(' ')}`).join('\n')+'\n';
+   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'text/plain'}));a.download=slugOf(title)+'-tab.txt';a.click();};
+  $('#twav').onclick=async()=>{toast('Rendering…');try{const o=opts();o.loop=false;const blob=await renderWav(song,o,1);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=slugOf($('#ttitle').value||'tab')+'.wav';a.click();}catch(e){toast('Could not render audio');}};
+  $('#tjam').onclick=()=>{JAM_PENDING={title:$('#ttitle').value,prog:res.chords.join(' | '),bpm,style:'swing'};};
+  $('#tsave').onclick=()=>{const t=($('#ttitle').value||'My transcription').trim();const sl=slugOf(t);const my=Store.get('mySongs',[]);if(!my.includes(t))my.push(t);Store.set('mySongs',my);
+   const all=Store.get('stdCharts',{});all[sl]={key:keyName,form:res.kind==='melody'?'Transcribed melody':'Transcribed chords',style:res.kind==='melody'?'pop':'swing',bpm,chart:'A: '+res.chords.join(' | '),melody:res.kind==='melody'?res.tab:undefined,band:false,transcribed:true};Store.set('stdCharts',all);toast('Saved to Repertoire → My transcriptions');location.hash='#/standard/'+sl;};}
+};
 
 // ---------- STANDARDS: chart → tab + shapes + soundtrack ----------
 function slugOf(t){return t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
@@ -1986,14 +2177,14 @@ function buildStdLesson(t){const C=chartFor(t);if(!C)return null;const sl=slugOf
  const style=C.style||'swing';const comp=genComp(bars,style);const meta=Object.values(REPERTOIRE).flat().find(r=>r[0]===t)||[t,C.composer||'—',C.year||'—',''];
  const apps=[];MODS.forEach(M=>(REPERTOIRE[M.id]||[]).forEach(r=>{if(r[0]===t)apps.push(`<b>${M.title}</b> — ${r[3]}`);}));
  const cues=[];secs.forEach(s=>s.bars.forEach((b,k)=>cues.push(`${s.name?s.name+' section · ':''}bar ${k+1}: ${pretty(b)}`)));
- const hasMel=!!C.melody;const user=!!Store.get('stdCharts',{})[sl];
+ const hasMel=!!C.melody;const user=!!Store.get('stdCharts',{})[sl];const trn=!!C.transcribed;
  const L={id:'std-'+sl,isStd:true,href:'#/standard/'+sl,std:{slug:sl,composer:meta[1],year:meta[2]},title:t,mins:Math.max(5,Math.round(bars.length*4/(C.bpm||120)*4)),bpm:C.bpm||120,style,straight:style==='pop',chords:bars,jam:bars,
-  tab:hasMel?C.melody:comp.tab,comp:hasMel,cues,
-  html:`<p><b>${t}</b> (${meta[1]}, ${meta[2]}). Key: <b>${pretty(C.key||'—')}</b>. Form: <b>${C.form||bars.length+' bars'}</b>${user?' — <i>your own chart</i>':''}.</p><p>${hasMel?'This traditional melody is in the public domain, so the tab is the <b>melody</b>, with a piano and rhythm section comping the changes.':'The tab is a <b>comping arrangement</b> of the changes, using the closest voicings so your hand moves as little as possible. The band plays bass and drums, and the video shows every shape. The melody is copyrighted and not included: learn it by ear from a recording or a fake book, then play it over this soundtrack.'}</p><p class="hint">Charts are common lead-sheet versions, sometimes simplified; recordings vary. Use “Edit chart” to adjust any chord — the tab, shapes and soundtrack update automatically.</p>`,
+  tab:hasMel?C.melody:comp.tab,comp:hasMel,band:C.band===false?false:undefined,cues,
+  html:`<p><b>${t}</b> (${meta[1]}, ${meta[2]}). Key: <b>${pretty(C.key||'—')}</b>. Form: <b>${C.form||bars.length+' bars'}</b>${user?' — <i>your own chart</i>':''}.</p><p>${trn?(hasMel?'This tab was <b>transcribed from your audio</b>. The chords above each bar are suggested harmonies — turn on “Band” to hear them, or edit them with “Edit chart”.':'These chords were <b>detected from your audio</b>; the tab is a comping arrangement using the closest voicings.'):hasMel?'This traditional melody is in the public domain, so the tab is the <b>melody</b>, with a piano and rhythm section comping the changes.':'The tab is a <b>comping arrangement</b> of the changes, using the closest voicings so your hand moves as little as possible. The band plays bass and drums, and the video shows every shape. The melody is copyrighted and not included: learn it by ear from a recording or a fake book, then play it over this soundtrack.'}</p><p class="hint">Charts are common lead-sheet versions, sometimes simplified; recordings vary. Use “Edit chart” to adjust any chord — the tab, shapes and soundtrack update automatically.</p>`,
   table:{title:'Chord chart',head:['Section','Bars','Changes'],rows:(()=>{let n=1;return secs.map(s=>{const r=[s.name||'—',`${n}–${n+s.bars.length-1}`,s.bars.map(pretty).join(' | ')];n+=s.bars.length;return r;});})()},
   keys:[`Key: ${pretty(C.key||'—')}`,`Form: ${C.form||bars.length+' bars'}`,`${comp.shapes.length} chord shapes`,hasMel?'Tab = melody':'Tab = comping; melody by ear'],
   usage:apps.length?apps:['Apply chord tones, guide tones and the concepts of each module to these changes'],
-  drills:['Play the comping tab with the band, then mute the guitar track and comp on your own','Play only the guide tones (3rds and 7ths) through the form','Improvise one chorus over the soundtrack using the concepts listed above'],
+  drills:trn?['Play along with the guitar track at a slow tempo, then mute it and play alone','Compare with your original recording and fix any wrong notes in your own copy','Turn on the band and improvise over the suggested chords']:['Play the comping tab with the band, then mute the guitar track and comp on your own','Play only the guide tones (3rds and 7ths) through the form','Improvise one chorus over the soundtrack using the concepts listed above'],
   figs:[{type:'chords',title:'Chord shapes used',cap:'Gold dot = root. Tap “Hear” to strum.',items:comp.shapes}],
   module:{id:'rep',num:'R',title:'Repertoire',color:'#ffcb6b',level:'Standard',lvl:{n:'–'},lessons:[]}};
  return L;}
@@ -2006,7 +2197,7 @@ VIEWS.stdedit=sl=>{const t=titleOfSlug(sl);if(!t){location.hash='#/repertoire';r
   <label class="f">Chord chart — bars separated by “|”, up to 4 chords per bar, sections separated by “||” with an optional label (“A:”, “B:”), “%” repeats a bar<textarea id="sc" rows="8">${cur.chart}</textarea></label>
   <div class="row"><button class="btn pri" id="ssave">Save & build</button>${built?'<button class="btn" id="sreset">Restore built-in chart</button>':''}<a class="btn" href="#/repertoire">Cancel</a></div>
   <p class="hint">Example: <code>A: Cmaj7 | Am7 | Dm7 G7 | Cmaj7 || B: Fm7 | Bb7 | Cmaj7 | %</code>. Chord symbols such as maj7, m7, 7, m7b5, dim7, 7b9, 7alt, 6, m6, 13, sus4 and slash chords (Am7/G) are understood.</p></div>`);
- $('#ssave').onclick=()=>{const c={key:$('#sk').value,form:$('#sf').value,style:$('#ss').value,bpm:Math.max(40,Math.min(300,+$('#sb').value||140)),chart:$('#sc').value};
+ $('#ssave').onclick=()=>{const c={...(cur.melody?{melody:cur.melody,transcribed:cur.transcribed,band:cur.band}:{}),key:$('#sk').value,form:$('#sf').value,style:$('#ss').value,bpm:Math.max(40,Math.min(300,+$('#sb').value||140)),chart:$('#sc').value};
   if(!parseChart(c.chart).flatMap(s=>s.bars).length){toast('Add at least one bar of chords');return;}const all=Store.get('stdCharts',{});all[sl]=c;Store.set('stdCharts',all);toast('Chart saved');location.hash='#/standard/'+sl;if(location.hash==='#/standard/'+sl)route();};
  if($('#sreset'))$('#sreset').onclick=()=>{const all=Store.get('stdCharts',{});delete all[sl];Store.set('stdCharts',all);toast('Built-in chart restored');location.hash='#/standard/'+sl;if(location.hash==='#/standard/'+sl)route();};};
 
@@ -2147,9 +2338,10 @@ VIEWS.tools=()=>{V(`<div class="eyebrow">Toolbox</div><h1>Practice Tools</h1><di
  <a class="tool" href="#/chords"><span class="ti">${ic('chord')}</span><span><b>Chord Library</b><small>All jazz voicings in 12 keys with audio</small></span></a>
  <a class="tool" href="#/fretboard"><span class="ti">${ic('fret')}</span><span><b>Fretboard Explorer</b><small>21 scales and every arpeggio across the neck</small></span></a>
  <a class="tool" href="#/ear"><span class="ti">${ic('ear')}</span><span><b>Ear Training</b><small>Intervals and chord qualities</small></span></a>
+ <a class="tool" href="#/transcribe"><span class="ti">${ic('rec')}</span><span><b>Audio → Tab</b><small>Record or load audio and convert it to guitar tab</small></span></a>
  <a class="tool" href="#/recognize"><span class="ti">${ic('wave')}</span><span><b>Chord Recognition</b><small>Detect chords from songs, live audio or fingerings</small></span></a>
  <a class="tool" href="#/repertoire"><span class="ti">${ic('book')}</span><span><b>Repertoire</b><small>Standards linked to every concept</small></span></a>
- <a class="tool" href="#/tuner"><span class="ti">${ic('tune')}</span><span><b>Tuner</b><small>Microphone tuner + reference tones</small></span></a>
+ <a class="tool" href="#/tuner"><span class="ti">${ic('tune')}</span><span><b>Guitar Tuner</b><small>Auto string detection, 8 tunings, reference tones</small></span></a>
  <a class="tool" href="#/metronome"><span class="ti">${ic('metro')}</span><span><b>Metronome & Timer</b><small>Click on 2 & 4, tap tempo, practice log</small></span></a>
  <a class="tool" href="#/jam"><span class="ti">${ic('jam')}</span><span><b>Jam Room</b><small>Backing tracks & WAV soundtracks</small></span></a></div>`);};
 
@@ -2158,9 +2350,9 @@ VIEWS.tools=()=>{V(`<div class="eyebrow">Toolbox</div><h1>Practice Tools</h1><di
 // =====================================================================
 function route(){const h=location.hash.replace(/^#\/?/,'')||'home';const [name,arg]=h.split('/');
  if(TP.playing&&TP.o.source!=='jam'&&TP.o.href!==location.hash&&!(name==='lesson'&&arg===TP.o.lessonId))tpStop();
- if(MET.on&&name!=='metronome')metStop();if(name!=='tuner')tunerStop();if(name!=='recognize')recStop();
+ if(MET.on&&name!=='metronome')metStop();if(name!=='tuner')tunerStop();if(name!=='recognize')recStop();if(name!=='transcribe')trStop();
  window.onresize=null;const key=name==='lesson'?'lessons':(name==='standard'||name==='stdedit')?'repertoire':name;
- $$('[data-r]').forEach(a=>a.classList.toggle('on',a.dataset.r===key||(key==='fretboard'||key==='ear'||key==='metronome'||key==='tuner'||key==='repertoire'||key==='recognize')&&a.dataset.r==='tools'&&a.closest('#bottomNav')));
+ $$('[data-r]').forEach(a=>a.classList.toggle('on',a.dataset.r===key||(key==='fretboard'||key==='ear'||key==='metronome'||key==='tuner'||key==='repertoire'||key==='recognize'||key==='transcribe')&&a.dataset.r==='tools'&&a.closest('#bottomNav')));
  (VIEWS[name]||VIEWS.home)(arg);window.scrollTo(0,0);}
 window.addEventListener('hashchange',route);
 route();

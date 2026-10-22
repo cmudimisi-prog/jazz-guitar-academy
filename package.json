@@ -1,8 +1,8 @@
 {
   "name": "jazz-guitar-academy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Jazz Guitar Academy — Android app (Capacitor wrapper of the offline web app)",
+  "description": "Jazz Guitar Academy \u2014 Android app (Capacitor wrapper of the offline web app)",
   "scripts": {
     "android:add": "cap add android",
     "android:sync": "cap sync android",

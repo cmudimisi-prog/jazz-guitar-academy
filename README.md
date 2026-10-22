@@ -26,6 +26,8 @@ open it in Chrome on Android → menu → **Install app**. It then works fully o
 From a hosted URL you can also generate a signed APK/AAB at **pwabuilder.com**.
 
 ## Updating
+The APK is signed with the key in `android-debug.keystore`, so every new build installs **over** the previous one (keeping your progress). Builds before version 2.0 used a random key: uninstall that old version once before installing 2.0.
+
 Replace `www/index.html` with a newer version and push again — the workflow rebuilds the APK.
 
 The debug APK is fine for personal use. For the Google Play Store, build a signed release

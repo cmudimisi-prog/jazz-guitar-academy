@@ -30,6 +30,13 @@ jobs:
         run: |
           M=android/app/src/main/AndroidManifest.xml
           grep -q RECORD_AUDIO $M || sed -i 's#<application#<uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <application#' $M
+      - name: Set version and stable signing key
+        run: |
+          G=android/app/build.gradle
+          sed -i -E "s/versionCode [0-9]+/versionCode $((100 + ${{ github.run_number }}))/" $G
+          sed -i -E "s/versionName \"[^\"]*\"/versionName \"2.0.${{ github.run_number }}\"/" $G
+          grep -E "versionCode|versionName" $G
+          mkdir -p ~/.android && cp android-debug.keystore ~/.android/debug.keystore
       - name: Build debug APK
         run: |
           cd android && chmod +x gradlew
