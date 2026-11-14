@@ -32,3 +32,6 @@ Replace `www/index.html` with a newer version and push again — the workflow re
 
 The debug APK is fine for personal use. For the Google Play Store, build a signed release
 (Android Studio ▸ Build ▸ Generate Signed Bundle / APK).
+
+## Credits
+3D hand model: WebXR Input Profiles "generic-hand" (immersive-web, MIT). 3D engine: three.js r160 (MIT).
