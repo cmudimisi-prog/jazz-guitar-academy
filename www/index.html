@@ -314,7 +314,7 @@ body.noscroll{overflow:hidden}body.noscroll .bottom,body.noscroll #mini{display:
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Version 3.0 · Works fully offline. Your progress is saved on this device.</div>
+    <div class="sideFoot">Version 3.1 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1691,10 +1691,12 @@ class HandView{
   // events around the play position
   let act=null,nxt=null,prev=null;for(const e of this.ev){if(!e.notes.length)continue;if(e.start<=pos+0.02&&pos<e.start+e.dur-0.02)act=e;if(e.start<=pos)prev=e;if(!nxt&&e.start>pos+0.02)nxt=e;}
   const soon=nxt&&(nxt.start-pos)<0.5?nxt:null;const show=act||soon||prev||nxt;const target=show&&show.notes.some(n=>n.f>0)?show.pos:this.hpos;
-  this.hpos+=(target-this.hpos)*ease(9);const faT=Math.max(0,this.hpos-2.2);this.fa+=(faT-this.fa)*ease(7);const fa=this.fa<0.3?0:this.fa,fb=fa+(port?7.5:9);
+  this.hpos+=(target-this.hpos)*ease(9);const faT=Math.max(0,this.hpos-(port?1.4:2.2));this.fa+=(faT-this.fa)*ease(7);const fa=this.fa<0.3?0:this.fa;
   // board geometry (slight perspective)
-  const py=H*(port?0.62:0.63),bt=H*(port?0.07:0.08),bb=H*(port?0.36:0.44),L=W*0.03,Rr=W*(fa===0?0.93:0.99),k=H*0.045;
-  const d=f=>1-Math.pow(2,-f/12);const X=f=>Rr-(d(f)-d(fa))/(d(fb)-d(fa))*(Rr-L);
+  const py=H*(port?0.62:0.63),bt=H*(port?0.07:0.08),bb0=H*(port?0.36:0.44),L=W*0.03,Rr=W*(fa===0?0.93:0.99),k=H*0.045;
+  const d=f=>1-Math.pow(2,-f/12);
+  // true-scale neck: string spacing 7.4 mm, fret widths from a 648 mm scale, same pixels per mm both ways
+  const kMax=(bb0-bt)/44.4,kNeed=(Rr-L)/((d(fa+(port?5.2:7))-d(fa))*648),kk=Math.max(Math.min(kMax,kNeed),(Rr-L)/((d(fa+(port?7:12))-d(fa))*648));const fb=-12*Math.log2(1-Math.min(0.8,d(fa)+(Rr-L)/(kk*648))),bb=Math.min(bt+kk*44.4,H*(port?0.4:0.5));const X=f=>Rr-(d(f)-d(fa))/(d(fb)-d(fa))*(Rr-L);
   const yT=x=>bt-k*(1-x/W),yB=x=>bb+k*(1-x/W);const Y=(s,x)=>{const t=yT(x),b=yB(x);return t+(6-s+0.5)/6*(b-t);};const sp=(bb-bt)/6;
   // neck edge (thickness) + fretboard
   g.fillStyle='#120c08';g.beginPath();g.moveTo(L,yB(L)+sp*0.15);g.lineTo(Rr,yB(Rr)+sp*0.15);g.lineTo(Rr,yB(Rr)+sp*0.45);g.lineTo(L,yB(L)+sp*0.6);g.closePath();g.fill();
@@ -1720,6 +1722,7 @@ class HandView{
    const pick=ns=>ns.reduce((a,b)=>a.s>b.s?a:b);
    if(pressed[i]){const ns=pressed[i];note=pick(ns);tg=tipAt(note);press=1;if(ns.length>1)barre=[Math.min(...ns.map(q=>q.s)),Math.max(...ns.map(q=>q.s))];}
    else if(upcoming[i]){note=pick(upcoming[i]);tg=tipAt(note);press=0;}
+   else if(style==='real'&&this.restTip&&this.restTip[i])tg=this.restTip[i];
    else{const x=(X(fx-1)+X(fx))/2;tg={x,y:Y(1.7+(i===4?0.35:0),x)+sp*0.2};}
    const T=this.tips[i]||(this.tips[i]={x:tg.x,y:tg.y,p:0});T.x+=(tg.x-T.x)*ease(press?26:14);T.y+=(tg.y-T.y)*ease(press?26:14);T.p+=(press-T.p)*ease(press?30:10);T.barre=barre;T.note=note;T.press=press;}
   const knX=i=>{const fx=Math.min(fb,Math.max(fa+0.6,hp+i-1));return (X(fx-1)+X(fx))/2;};const cx=(knX(1)+knX(4))/2,span=Math.abs(knX(1)-knX(4))+sp*2.6;
@@ -1734,77 +1737,100 @@ class HandView{
   const palmY=kY+sp*1.9;l.beginPath();l.moveTo(cx-span*0.5,kY+sp*0.15);l.bezierCurveTo(cx-span*0.56,palmY+sp*1.2,cx-span*0.3,palmY+sp*2.4,cx-span*0.18,palmY+sp*4.2);l.lineTo(cx+span*0.26,palmY+sp*4.2);l.bezierCurveTo(cx+span*0.34,palmY+sp*2.2,cx+span*0.58,palmY+sp*1.0,cx+span*0.5,kY+sp*0.05);l.quadraticCurveTo(cx,kY-sp*0.55,cx-span*0.5,kY+sp*0.15);l.fill();
   for(let i=1;i<=4;i++){const K=geo[i].K;l.beginPath();l.arc(K.x,K.y,geo[i].w0*0.62,0,7);l.fill();}
   if(style==='real'){
-   const fretW=Math.abs(knX(1)-knX(4))/3;const U=Math.max(sp,Math.min(sp*1.8,fretW*0.36));const kY2=Math.min(kY,bb+(py-bb)*0.5);
-   const SK=SKINS[Store.get('hvSkin','medium')]||SKINS.medium;const tnow=performance.now()/1000;
-   // ---- anatomy: knuckles on an arc, fingers of different length/width ----
-   const FW=[0,1.0,1.06,0.98,0.84],FL=[0,1.0,1.12,1.04,0.86];const kx0=cx+span*0.08,ksp=U*1.12;
-   const KN={};for(let i=1;i<=4;i++){const sway=Math.sin(tnow*1.3+i)*U*0.03;KN[i]={x:kx0+(2.5-i)*ksp+sway,y:kY2+U*([0,0.3,0,0.12,0.5][i])+Math.cos(tnow*1.1+i)*U*0.02};}
-   const wrist={x:kx0+U*0.9,y:kY2+U*5.6};
-   const cat=(P,N)=>{const E=[{x:2*P[0].x-P[1].x,y:2*P[0].y-P[1].y},...P,{x:2*P[P.length-1].x-P[P.length-2].x,y:2*P[P.length-1].y-P[P.length-2].y}];const out=[];
-    for(let k=1;k<E.length-2;k++){const A=E[k-1],B=E[k],C=E[k+1],D=E[k+2];for(let j=0;j<N;j++){const s2=j/N,s3=s2*s2,s4=s3*s2;out.push({x:0.5*(2*B.x+(-A.x+C.x)*s2+(2*A.x-5*B.x+4*C.x-D.x)*s3+(-A.x+3*B.x-3*C.x+D.x)*s4),y:0.5*(2*B.y+(-A.y+C.y)*s2+(2*A.y-5*B.y+4*C.y-D.y)*s3+(-A.y+3*B.y-3*C.y+D.y)*s4)});}}
-    out.push({...P[P.length-1]});let Lc=0;out.forEach((q,j)=>{if(j)Lc+=Math.hypot(q.x-out[j-1].x,q.y-out[j-1].y);q.l=Lc;});out.forEach(q=>q.t=q.l/(Lc||1));return {pts:out,len:Lc};};
-   const gauss=(t,c,w)=>Math.exp(-(((t-c)/w)**2));
-   const H2={};
-   for(let i=1;i<=4;i++){const T=this.tips[i];const lift=1-T.p;const K=KN[i];const tip={x:T.x+lift*U*0.1,y:T.y-lift*U*0.22};const dx=tip.x-K.x,dy=tip.y-K.y,d=Math.hypot(dx,dy)||1;const ux=dx/d,uy=dy/d,nx=uy,ny=-ux;
-    const nat=U*3.4*FL[i];const bend=Math.max(-U*0.15,Math.min(U*0.85,(nat-d)*0.32))+U*(0.12+lift*0.18);
-    const pip={x:K.x+ux*d*0.47+nx*bend,y:K.y+uy*d*0.47+ny*bend},dip={x:K.x+ux*d*0.77+nx*bend*0.55,y:K.y+uy*d*0.77+ny*bend*0.55};
-    const C=cat([K,pip,dip,tip],12);const wb=U*0.98*FW[i];const press=T.p;
-    const wAt=t=>wb*(1-0.27*t)*(1+0.07*gauss(t,0.47,0.06)+0.05*gauss(t,0.77,0.05)+0.09*press*gauss(t,0.95,0.06))*(1+0.04*Math.sin(t*9+i));
-    const Lp=[],Rp=[],M=[];C.pts.forEach((q,j)=>{const a=C.pts[Math.max(0,j-1)],b=C.pts[Math.min(C.pts.length-1,j+1)];const tx=b.x-a.x,ty=b.y-a.y,tl=Math.hypot(tx,ty)||1;const px2=-ty/tl,py2=tx/tl;const w=wAt(q.t)/2;
-     Lp.push([q.x+px2*w*1.04,q.y+py2*w*1.04]);Rp.push([q.x-px2*w*0.96,q.y-py2*w*0.96]);M.push({x:q.x,y:q.y,nx:px2,ny:py2,w,t:q.t,tx:tx/tl,ty:ty/tl});});
-    H2[i]={Lp,Rp,M,tip,K,pip,dip,w1:wAt(1),w0:wb,len:C.len};}
-   const fingerPath=(c,F)=>{const {Lp,Rp,M}=F;const N=M.length-1;c.beginPath();c.moveTo(Lp[0][0],Lp[0][1]);for(let j=1;j<=N;j++)c.lineTo(Lp[j][0],Lp[j][1]);const e=M[N];const a0=Math.atan2(Lp[N][1]-e.y,Lp[N][0]-e.x);const a1=Math.atan2(Rp[N][1]-e.y,Rp[N][0]-e.x);
-    const ccw=((a1-a0+Math.PI*4)%(Math.PI*2))<Math.PI;c.arc(e.x,e.y,e.w,a0,a1,ccw);for(let j=N;j>=0;j--)c.lineTo(Rp[j][0],Rp[j][1]);c.closePath();};
-   const handPath=c=>{const k1=KN[1],k4=KN[4];c.beginPath();c.moveTo(k4.x-U*0.55,k4.y-U*0.1);c.bezierCurveTo(k4.x-U*0.85,k4.y+U*1.6,wrist.x-U*2.3,wrist.y-U*1.4,wrist.x-U*1.5,wrist.y+U*1.2);c.lineTo(wrist.x+U*1.7,wrist.y+U*1.2);
-    c.bezierCurveTo(wrist.x+U*2.2,wrist.y-U*1.6,k1.x+U*1.2,k1.y+U*1.4,k1.x+U*0.6,k1.y-U*0.15);c.bezierCurveTo(KN[2].x+U*0.3,KN[2].y-U*0.75,KN[3].x-U*0.3,KN[3].y-U*0.7,k4.x-U*0.55,k4.y-U*0.1);c.closePath();};
-   const thumbX=KN[1].x+U*0.35,thumbTop=bt-U*0.95;
-   const thumbPath=c=>{c.beginPath();c.moveTo(thumbX-U*0.48,bt+U*0.05);c.lineTo(thumbX-U*0.44,thumbTop+U*0.45);c.quadraticCurveTo(thumbX-U*0.42,thumbTop,thumbX,thumbTop-U*0.02);c.quadraticCurveTo(thumbX+U*0.46,thumbTop,thumbX+U*0.48,thumbTop+U*0.45);c.lineTo(thumbX+U*0.5,bt+U*0.05);c.closePath();};
-   // ---- silhouette layer -> soft drop shadow on the fretboard ----
-   l.clearRect(0,0,W,H);l.fillStyle='#000';handPath(l);l.fill();for(let i=1;i<=4;i++){fingerPath(l,H2[i]);l.fill();}
-   g.save();g.beginPath();g.rect(0,bt-U*0.3,W,py-3-(bt-U*0.3));g.clip();g.globalAlpha=0.42;try{g.filter='blur(7px)';}catch(e){}g.drawImage(this.lay,U*0.4,U*0.6,W,H);try{g.filter='none';}catch(e){}g.restore();
-   // contact light where the playing fingertip touches the string
-   for(let i=1;i<=4;i++){const T=this.tips[i];if(T.p<0.3)continue;const gl=g.createRadialGradient(T.x,T.y,1,T.x,T.y,U*1.1);gl.addColorStop(0,FCOL[i]+'cc');gl.addColorStop(1,FCOL[i]+'00');g.save();g.globalAlpha=T.p;g.fillStyle=gl;g.beginPath();g.arc(T.x,T.y,U*1.1,0,7);g.fill();g.restore();}
-   const skinShade=(path,x0,y0,x1,y1)=>{const gr=g.createLinearGradient(x0,y0,x1,y1);gr.addColorStop(0,SK.sh);gr.addColorStop(0.3,SK.base);gr.addColorStop(0.5,SK.hi);gr.addColorStop(0.75,SK.base);gr.addColorStop(1,SK.sh);g.fillStyle=gr;path();g.fill();};
+   const SK=SKINS[Store.get('hvSkin','medium')]||SKINS.medium;const mm=sp/7.4,CZ=0.3;
+   // real adult hand, millimetres: phalanx lengths (proximal, middle, distal) and widths (MCP, PIP, DIP, tip)
+   const PH=[0,[46,26,19],[50,30,21],[47,29,21],[37,21,19]],WD=[0,[19,17.5,15.5,14],[20,18.5,16,14.5],[18.5,17,15,13.5],[16,14.5,13,12]];
+   const KO=[0,{x:27,y:0,z:22},{x:8,y:-3,z:24},{x:-11,y:-1,z:23},{x:-28,y:6,z:20}];
+   const Lf=i=>(PH[i][0]+PH[i][1]+PH[i][2])*mm;const yE=x=>Y(1,x);
+   // ---- place the rigid hand so every target is reachable without stretching ----
+   let sx=0,sw=0;for(let i=1;i<=4;i++){const T=this.tips[i];if(T.note){const w=T.press?1:0.5;sx+=(T.x-KO[i].x*mm)*w;sw+=w;}else{sx+=(knX(i)-KO[i].x*mm)*0.2;sw+=0.2;}}
+   let hx=sx/sw,hy=yE(hx)+22*mm;const T1=this.tips[1];const barA=T1.barre&&T1.p>0.5?T1.p:0;
+   if(barA){const tyB=Y(T1.barre[1],T1.x)-3*mm;const kz=12*mm;hy=Math.max(hy,tyB+Math.sqrt(Math.max(0,(Lf(1)*0.93)**2-kz*kz))-KO[1].y*mm);}
+   for(let it=0;it<10;it++){let dx=0,dy=0,n=0;
+    for(let i=1;i<=4;i++){const T=this.tips[i];if(!T.note||(i===1&&barA))continue;const K={x:hx+KO[i].x*mm,y:hy+KO[i].y*mm,z:KO[i].z*mm};const vx=T.x-K.x,vy=T.y-K.y,vz=(1-T.p)*12*mm-K.z;const D=Math.hypot(vx,vy,vz),h=Math.hypot(vx,vy)||1;
+     const lim=Lf(i)*0.95,lmin=Lf(i)*0.4;if(D>lim){const ex=(D-lim)*1.05;dx+=vx/h*ex;dy+=vy/h*ex;n++;}else if(D<lmin){const ex=(lmin-D)*1.05;dy+=ex;n++;}
+     const amax=0.5,up=Math.max(1,-vy),ang=Math.atan2(vx,up);if(Math.abs(ang)>amax){dx+=vx-Math.sign(vx)*Math.tan(amax)*up;n++;}}
+    if(!n)break;hx+=dx/n;hy=Math.max(yE(hx)+6*mm,hy+dy/n);}
+   const hd=this.hand||(this.hand={x:hx,y:hy});hd.x+=(hx-hd.x)*ease(16);hd.y+=(hy-hd.y)*ease(16);
+   // resting fingers hover over the strings in front of their own knuckle
+   this.restTip={};for(let i=1;i<=4;i++){const x=hd.x+KO[i].x*mm*0.92;this.restTip[i]={x,y:Y(2.3+(i===4?0.3:0),x)};}
+   // ---- inverse kinematics: fixed bone lengths, joints only bend (DIP follows PIP) ----
+   const HF={};
+   for(let i=1;i<=4;i++){const T=this.tips[i];const bar=i===1?barA:0;const ko=KO[i];
+    const K={x:hd.x+ko.x*mm,y:hd.y+ko.y*mm,z:(ko.z-18*bar)*mm};let tx=T.x,ty=T.y;const tz=(1-T.p)*12*mm;if(bar)ty=Y(T1.barre[1],tx)-3*mm;
+    const vx=tx-K.x,vy=ty-K.y,h=Math.hypot(vx,vy)||1,ux=vx/h,uy=vy/h,dw=tz-K.z,D=Math.hypot(h,dw);const P=PH[i].map(v=>v*mm);
+    // fingertip comes down as upright as the joints allow, then two-bone IK places the PIP joint (arched upward)
+    let th=null;const phis=bar?[-0.06]:[-1.45,-1.35,-1.25,-1.15,-1.05,-0.95,-0.85,-0.75,-0.65,-0.55,-0.45,-0.35,-0.25,-0.15,-0.05];
+    for(const ph of phis){const qu=h-P[2]*Math.cos(ph),qw=dw-P[2]*Math.sin(ph);const d=Math.hypot(qu,qw);if(d>P[0]+P[1]-0.3||d<Math.abs(P[0]-P[1])+0.3)continue;
+     const al=Math.atan2(qw,qu),be=Math.acos(Math.max(-1,Math.min(1,(P[0]*P[0]+d*d-P[1]*P[1])/(2*P[0]*d))));const t1=al+be;const pu=P[0]*Math.cos(t1),pw=P[0]*Math.sin(t1);const t2=Math.atan2(qw-pw,qu-pu);
+     const bad=Math.max(0,t2-t1)+Math.max(0,ph-t2)*0+Math.max(0,(ph-0.1)-t2)+Math.max(0,t1-1.4);const sc=bad*4+Math.abs(ph+1.3)*0.15;if(!th||sc<th.sc)th={sc,a:[t1,t2,ph]};if(bad<0.02)break;}
+    th=th?th.a:(()=>{const ang=Math.atan2(dw,h);return [ang+0.15,ang-0.1,ang-0.3];})();
+    const J=[{u:0,w:0}];th.forEach((t,j)=>{const p=J[j];J.push({u:p.u+P[j]*Math.cos(t),w:p.w+P[j]*Math.sin(t)});});
+    const S=J.map(q=>{const z=K.z+q.w;return {x:K.x+ux*q.u,y:K.y+uy*q.u+CZ*z,z};});
+    HF[i]={S,P,th,ux,uy,W:WD[i].map(v=>v*mm)};}
+   // ---- geometry helpers ----
+   const capsule=(c,A,B,wa,wb,fill)=>{const dx=B.x-A.x,dy=B.y-A.y,l=Math.hypot(dx,dy)||1e-6,nx=-dy/l,ny=dx/l;c.fillStyle=fill;
+    c.beginPath();c.moveTo(A.x+nx*wa/2,A.y+ny*wa/2);c.lineTo(B.x+nx*wb/2,B.y+ny*wb/2);c.lineTo(B.x-nx*wb/2,B.y-ny*wb/2);c.lineTo(A.x-nx*wa/2,A.y-ny*wa/2);c.closePath();c.fill();
+    c.beginPath();c.arc(A.x,A.y,wa/2,0,7);c.fill();c.beginPath();c.arc(B.x,B.y,wb/2,0,7);c.fill();};
+   const HP=(x,y,z)=>({x:hd.x+x*mm,y:hd.y+y*mm+CZ*z*mm});
+   const handPath=c=>{const a=HP(-38,10,24),b=HP(40,2,26),w1=HP(-30,115,62),w2=HP(32,115,56),k1=HP(27,-2,30),k4=HP(-28,4,27),m1=HP(8,-6,32);
+    c.beginPath();c.moveTo(a.x,a.y);c.bezierCurveTo(a.x-6*mm,a.y+40*mm,w1.x-8*mm,w1.y-40*mm,w1.x,w1.y);c.lineTo(w2.x,w2.y);c.bezierCurveTo(w2.x+8*mm,w2.y-40*mm,b.x+8*mm,b.y+40*mm,b.x,b.y);
+    c.quadraticCurveTo(k1.x+6*mm,k1.y-6*mm,m1.x,m1.y-2*mm);c.quadraticCurveTo(k4.x-6*mm,k4.y-6*mm,a.x,a.y);c.closePath();};
+   const order=f=>[0,1,2].sort((p,q)=>(f.S[p].z+f.S[p+1].z)-(f.S[q].z+f.S[q+1].z));
+   // ---- shadow: each part offset by its own height above the board, blurred ----
+   l.clearRect(0,0,W,H);l.save();l.translate(26*mm*0.18,40*mm*0.28);l.fillStyle='#000';handPath(l);l.fill();l.restore();
+   for(let i=1;i<=4;i++){const f=HF[i];for(let j=0;j<3;j++){const A=f.S[j],B=f.S[j+1];const o=z=>({x:z*0.2,y:z*0.3-CZ*z});const oa=o(A.z),ob=o(B.z);capsule(l,{x:A.x+oa.x,y:A.y+oa.y},{x:B.x+ob.x,y:B.y+ob.y},f.W[j],f.W[j+1],'#000');}}
+   g.save();g.beginPath();g.rect(0,bt-sp*0.3,W,py-3-(bt-sp*0.3));g.clip();g.globalAlpha=0.45;try{g.filter=`blur(${Math.max(2,2.2*mm)}px)`;}catch(e){}g.drawImage(this.lay,0,0,W,H);try{g.filter='none';}catch(e){}g.restore();
+   for(let i=1;i<=4;i++){const T=this.tips[i];if(T.p<0.3)continue;const R=sp*1.0;const gl=g.createRadialGradient(T.x,T.y,1,T.x,T.y,R);gl.addColorStop(0,FCOL[i]+'aa');gl.addColorStop(1,FCOL[i]+'00');g.save();g.globalAlpha=T.p;g.fillStyle=gl;g.beginPath();g.arc(T.x,T.y,R,0,7);g.fill();g.restore();}
    g.save();g.beginPath();g.rect(0,0,W,py-3);g.clip();
-   // ---- thumb tip over the top of the neck ----
-   g.save();g.beginPath();g.rect(0,0,W,bt-U*0.12);g.clip();skinShade(()=>thumbPath(g),thumbX-U*0.5,0,thumbX+U*0.5,0);
-   g.save();g.translate(thumbX,thumbTop+U*0.32);const tnr=U*0.3;const tng=g.createLinearGradient(-tnr,0,tnr,0);tng.addColorStop(0,SK.nail2);tng.addColorStop(0.5,SK.nail);tng.addColorStop(1,SK.nail2);g.fillStyle=tng;g.beginPath();g.ellipse(0,0,tnr,tnr*0.9,0,0,7);g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.45;g.lineWidth=0.8;g.stroke();g.restore();
-   g.strokeStyle=SK.edge;g.globalAlpha=0.35;g.lineWidth=1;thumbPath(g);g.stroke();g.globalAlpha=1;g.restore();
+   // ---- thumb tip behind the neck, peeking over the top edge ----
+   {const x=hd.x+14*mm,top=yT(x)-sp*0.15,tw=21*mm,tt=top-8*mm;g.save();g.beginPath();g.rect(0,0,W,top);g.clip();
+    const tg=g.createLinearGradient(x-tw/2,0,x+tw/2,0);tg.addColorStop(0,SK.sh);tg.addColorStop(0.35,SK.base);tg.addColorStop(0.55,SK.hi);tg.addColorStop(1,SK.sh);g.fillStyle=tg;
+    g.beginPath();g.moveTo(x-tw/2,top+2);g.lineTo(x-tw/2,tt+tw*0.45);g.quadraticCurveTo(x-tw/2,tt,x,tt);g.quadraticCurveTo(x+tw/2,tt,x+tw/2,tt+tw*0.45);g.lineTo(x+tw/2,top+2);g.closePath();g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.4;g.lineWidth=1;g.stroke();g.globalAlpha=1;
+    const nw=tw*0.34;const ng=g.createLinearGradient(x-nw,0,x+nw,0);ng.addColorStop(0,SK.nail2);ng.addColorStop(0.5,SK.nail);ng.addColorStop(1,SK.nail2);g.fillStyle=ng;g.beginPath();g.ellipse(x,tt+nw*1.05,nw,nw*0.95,0,0,7);g.fill();g.fillStyle='rgba(255,250,240,.7)';g.beginPath();g.ellipse(x,tt+nw*0.3,nw*0.8,nw*0.28,0,Math.PI,0);g.fill();g.restore();}
    // ---- back of the hand ----
-   const hg=g.createRadialGradient(KN[2].x-U*0.5,KN[2].y+U*1.5,U*0.6,wrist.x,wrist.y-U*1.5,span*0.95);hg.addColorStop(0,SK.hi);hg.addColorStop(0.5,SK.base);hg.addColorStop(1,SK.sh);g.fillStyle=hg;handPath(g);g.fill();
-   g.strokeStyle=SK.edge;g.globalAlpha=0.35;g.lineWidth=1;g.stroke();g.globalAlpha=1;
-   for(let i=1;i<=4;i++){const K=KN[i];g.strokeStyle=SK.sh;g.globalAlpha=0.13;g.lineWidth=U*0.16;g.lineCap='round';g.beginPath();g.moveTo(K.x,K.y+U*0.55);g.bezierCurveTo(K.x+(wrist.x-K.x)*0.25,K.y+U*1.8,wrist.x+(K.x-wrist.x)*0.35,wrist.y-U*1.8,wrist.x+(K.x-wrist.x)*0.25,wrist.y);g.stroke();g.globalAlpha=1;}
-   // ---- fingers (little -> index) ----
-   for(let i=4;i>=1;i--){const F=H2[i];const {Lp,Rp,M}=F;const N=M.length-1;
-    fingerPath(g,F);g.fillStyle=SK.base;g.fill();
-    for(let j=0;j<N;j++){const A=Lp[j],B=Lp[j+1],C2=Rp[j+1],D=Rp[j];const cg=g.createLinearGradient((A[0]+B[0])/2,(A[1]+B[1])/2,(D[0]+C2[0])/2,(D[1]+C2[1])/2);cg.addColorStop(0,SK.sh);cg.addColorStop(0.22,SK.base);cg.addColorStop(0.42,SK.hi);cg.addColorStop(0.7,SK.base);cg.addColorStop(1,SK.sh);
-     g.fillStyle=cg;g.beginPath();g.moveTo(A[0],A[1]);g.lineTo(B[0],B[1]);g.lineTo(C2[0],C2[1]);g.lineTo(D[0],D[1]);g.closePath();g.fill();}
-    const e=M[N];const tg3=g.createRadialGradient(e.x-e.w*0.3,e.y-e.w*0.3,1,e.x,e.y,e.w*1.15);tg3.addColorStop(0,SK.hi);tg3.addColorStop(0.55,SK.base);tg3.addColorStop(1,SK.sh);g.fillStyle=tg3;g.beginPath();g.arc(e.x,e.y,e.w*0.98,0,7);g.fill();
-    // blush on knuckles and pad, occlusion at the base
-    [[0.47,0.55],[0.97,0.6]].forEach(([t,a])=>{const m=M[Math.round(t*N)];const bl=g.createRadialGradient(m.x,m.y,1,m.x,m.y,m.w*1.3);bl.addColorStop(0,SK.blush);bl.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=a;g.fillStyle=bl;g.beginPath();g.arc(m.x,m.y,m.w*1.3,0,7);g.fill();g.restore();});
-    const m0=M[0],m1=M[Math.round(0.16*N)];const ao=g.createLinearGradient(m0.x,m0.y,m1.x,m1.y);ao.addColorStop(0,'rgba(0,0,0,.12)');ao.addColorStop(1,'rgba(0,0,0,0)');g.save();fingerPath(g,F);g.clip();g.fillStyle=ao;g.fillRect(Math.min(m0.x,m1.x)-U*2,Math.min(m0.y,m1.y)-U*2,Math.abs(m1.x-m0.x)+U*4,Math.abs(m1.y-m0.y)+U*4);g.restore();
-    // soft edge
-    g.strokeStyle=SK.edge;g.globalAlpha=0.4;g.lineWidth=0.9;fingerPath(g,F);g.stroke();g.globalAlpha=1;
-    // knuckle wrinkles (back of the finger)
-    [[0.47,3,0.6],[0.77,2,0.5]].forEach(([t,n,wf])=>{const m=M[Math.round(t*N)];for(let q=0;q<n;q++){const o=(q-(n-1)/2)*U*0.075;const bx=m.x+m.tx*o,by=m.y+m.ty*o;const ww=m.w*wf*(1-Math.abs(q-(n-1)/2)*0.25);
-      g.strokeStyle=SK.crease;g.globalAlpha=0.5;g.lineWidth=0.9;g.beginPath();g.moveTo(bx+m.nx*ww,by+m.ny*ww);g.quadraticCurveTo(bx+m.tx*U*0.07,by+m.ty*U*0.07,bx-m.nx*ww,by-m.ny*ww);g.stroke();g.globalAlpha=1;}});
-    // fingernail with lunula and white free edge
-    const mn=M[Math.round(0.9*N)];const ang=Math.atan2(mn.ty,mn.tx);const nl=Math.max(U*0.34,F.len*0.1),nw=mn.w*0.62;
-    g.save();g.translate(mn.x+mn.tx*nl*0.15,mn.y+mn.ty*nl*0.15);g.rotate(ang);
-    const np=()=>{g.beginPath();g.moveTo(-nl*0.55,-nw*0.82);g.quadraticCurveTo(-nl*0.7,0,-nl*0.55,nw*0.82);g.lineTo(nl*0.38,nw*0.86);g.quadraticCurveTo(nl*0.62,0,nl*0.38,-nw*0.86);g.closePath();};
-    const ngr=g.createLinearGradient(0,-nw,0,nw);ngr.addColorStop(0,SK.nail2);ngr.addColorStop(0.45,SK.nail);ngr.addColorStop(1,SK.nail2);g.fillStyle=ngr;np();g.fill();
-    g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.ellipse(-nl*0.48,0,nl*0.16,nw*0.6,0,-Math.PI/2,Math.PI/2);g.fill();
-    g.fillStyle='rgba(255,250,240,.75)';g.beginPath();g.moveTo(nl*0.32,-nw*0.8);g.quadraticCurveTo(nl*0.6,0,nl*0.32,nw*0.8);g.quadraticCurveTo(nl*0.42,0,nl*0.32,-nw*0.8);g.fill();
-    g.strokeStyle=SK.edge;g.globalAlpha=0.5;g.lineWidth=0.8;np();g.stroke();g.globalAlpha=0.55;g.strokeStyle='#fff';g.lineWidth=1;g.beginPath();g.moveTo(-nl*0.3,-nw*0.4);g.lineTo(nl*0.2,-nw*0.45);g.stroke();g.restore();}
-   // MCP knuckles over the finger bases
-   for(let i=1;i<=4;i++){const K=KN[i],w0=H2[i].w0;const kg=g.createRadialGradient(K.x-w0*0.15,K.y-w0*0.2,1,K.x,K.y,w0*0.75);kg.addColorStop(0,SK.hi);kg.addColorStop(0.6,SK.base);kg.addColorStop(1,SK.base+'00');g.save();g.globalAlpha=0.5;g.fillStyle=kg;g.beginPath();g.ellipse(K.x,K.y,w0*0.5,w0*0.38,0,0,7);g.fill();g.restore();
-    const bl=g.createRadialGradient(K.x,K.y,1,K.x,K.y,w0*0.6);bl.addColorStop(0,SK.blush);bl.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=0.45;g.fillStyle=bl;g.beginPath();g.arc(K.x,K.y,w0*0.6,0,7);g.fill();g.restore();}
-   // barre: index lies flat across the strings
-   const T1=this.tips[1];if(T1.barre&&T1.p>0.5){const x=H2[1].tip.x;const y0=Y(T1.barre[0],x),y1=Y(T1.barre[1],x);const bw=H2[1].w1*1.05,top=Math.min(y0,y1)-bw*0.5,hh=Math.max(y0,y1)-top+bw*0.2;
-    const bg2=g.createLinearGradient(x-bw/2,0,x+bw/2,0);bg2.addColorStop(0,SK.sh);bg2.addColorStop(0.45,SK.hi);bg2.addColorStop(1,SK.sh);g.fillStyle=bg2;g.beginPath();g.roundRect?g.roundRect(x-bw/2,top,bw,hh,bw/2):g.rect(x-bw/2,top,bw,hh);g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.4;g.stroke();g.globalAlpha=1;
-    [0.3,0.55].forEach(f=>{g.strokeStyle=SK.crease;g.globalAlpha=0.45;g.beginPath();g.moveTo(x-bw*0.35,top+hh*f);g.quadraticCurveTo(x,top+hh*f+3,x+bw*0.35,top+hh*f);g.stroke();g.globalAlpha=1;});}
+   const hc=HP(4,40,40);const hg=g.createRadialGradient(hc.x-12*mm,hc.y-22*mm,4*mm,hc.x,hc.y,70*mm);hg.addColorStop(0,SK.hi);hg.addColorStop(0.5,SK.base);hg.addColorStop(1,SK.sh);
+   g.fillStyle=SK.edge;g.globalAlpha=0.5;g.save();g.translate(0,0);handPath(g);g.lineWidth=1.6;g.strokeStyle=SK.edge;g.stroke();g.restore();g.globalAlpha=1;g.fillStyle=hg;handPath(g);g.fill();
+   for(let i=1;i<=4;i++){const K=HF[i].S[0],w=HP(KO[i].x*0.35,112,58);g.strokeStyle=SK.sh;g.globalAlpha=0.14;g.lineWidth=3.2*mm;g.lineCap='round';g.beginPath();g.moveTo(K.x,K.y+4*mm);g.quadraticCurveTo(K.x+(w.x-K.x)*0.3,K.y+(w.y-K.y)*0.5,w.x,w.y);g.stroke();
+    g.strokeStyle=SK.hi;g.globalAlpha=0.18;g.lineWidth=1.4*mm;g.beginPath();g.moveTo(K.x-0.8*mm,K.y+4*mm);g.quadraticCurveTo(K.x+(w.x-K.x)*0.3-0.8*mm,K.y+(w.y-K.y)*0.5,w.x-0.8*mm,w.y);g.stroke();g.globalAlpha=1;}
+   // ---- fingers: rigid phalanges drawn far-to-near ----
+   const lightN=(A,B)=>{const dx=B.x-A.x,dy=B.y-A.y,l=Math.hypot(dx,dy)||1;let nx=-dy/l,ny=dx/l;if(nx+ny>0){nx=-nx;ny=-ny;}return [nx,ny];};
+   const cat=(P,N)=>{const E=[{x:2*P[0].x-P[1].x,y:2*P[0].y-P[1].y},...P,{x:2*P[P.length-1].x-P[P.length-2].x,y:2*P[P.length-1].y-P[P.length-2].y}];const out=[];
+    for(let k3=1;k3<E.length-2;k3++){const A=E[k3-1],B=E[k3],C=E[k3+1],D=E[k3+2];for(let j=0;j<10;j++){const t=j/10,t2=t*t,t3=t2*t;out.push({x:0.5*(2*B.x+(-A.x+C.x)*t+(2*A.x-5*B.x+4*C.x-D.x)*t2+(-A.x+3*B.x-3*C.x+D.x)*t3),y:0.5*(2*B.y+(-A.y+C.y)*t+(2*A.y-5*B.y+4*C.y-D.y)*t2+(-A.y+3*B.y-3*C.y+D.y)*t3),seg:k3-1,f:t});}}
+    out.push({...P[P.length-1],seg:P.length-2,f:1});return out;};
+   for(const i of [4,3,2,1]){const f=HF[i],S=f.S,Wd=f.W;const C=cat(S).filter((q,j,a)=>j===0||j===a.length-1||Math.hypot(q.x-a[j-1].x,q.y-a[j-1].y)>0.9);const N=C.length-1;
+    const wAt=q=>{const w=Wd[q.seg]+(Wd[q.seg+1]-Wd[q.seg])*q.f;const bump=(q.seg>0&&q.f<0.2?0.05*(1-q.f/0.2):0)+(q.seg<2&&q.f>0.85?0.05*(q.f-0.85)/0.15:0);return w*(1+bump);};
+    const Lp=[],Rp=[],M=[];const dEnd=Math.hypot(S[3].x-S[2].x,S[3].y-S[2].y)>Wd[3]*0.5?[S[2],S[3]]:[S[1],S[3]];C.forEach((q,j)=>{const a2=C[Math.max(0,j-3)],b2=C[Math.min(N,j+3)];let tx=b2.x-a2.x,ty=b2.y-a2.y;if(j>N-4){const k5=(j-(N-4))/4;tx=tx*(1-k5)+(dEnd[1].x-dEnd[0].x)*k5;ty=ty*(1-k5)+(dEnd[1].y-dEnd[0].y)*k5;}const tl=Math.hypot(tx,ty)||1;const nx=-ty/tl,ny=tx/tl,w=wAt(q)/2;Lp.push([q.x+nx*w,q.y+ny*w]);Rp.push([q.x-nx*w,q.y-ny*w]);M.push({x:q.x,y:q.y,nx,ny,w,tx:tx/tl,ty:ty/tl,seg:q.seg,f:q.f});});
+    const path=c=>{c.beginPath();c.moveTo(Lp[0][0],Lp[0][1]);for(let j=1;j<=N;j++)c.lineTo(Lp[j][0],Lp[j][1]);for(let j=N;j>=0;j--)c.lineTo(Rp[j][0],Rp[j][1]);c.closePath();};
+    // rounded fingertip pad (drawn first, the finger tube overlaps its inner half)
+    {const e=M[N],r=e.w;g.strokeStyle=SK.edge;g.lineWidth=1.6;g.globalAlpha=0.6;g.beginPath();g.arc(e.x,e.y,r,0,7);g.stroke();g.globalAlpha=1;const tg4=g.createRadialGradient(e.x-r*0.35,e.y-r*0.35,1,e.x,e.y,r*1.05);tg4.addColorStop(0,SK.hi);tg4.addColorStop(0.5,SK.base);tg4.addColorStop(1,SK.sh);g.fillStyle=tg4;g.beginPath();g.arc(e.x,e.y,r,0,7);g.fill();}
+    g.strokeStyle=SK.edge;g.lineWidth=1.6;g.globalAlpha=0.6;path(g);g.stroke();g.globalAlpha=1;g.fillStyle=SK.base;path(g);g.fill();
+    // cylindrical shading strip by strip, light from the upper left
+    g.save();path(g);g.clip();
+    for(let j=0;j<N;j++){const A=Lp[j],B=Lp[j+1],C2=Rp[j+1],D=Rp[j];let l0=[(A[0]+B[0])/2,(A[1]+B[1])/2],r0=[(D[0]+C2[0])/2,(D[1]+C2[1])/2];if((l0[0]-r0[0])+(l0[1]-r0[1])>0){const t=l0;l0=r0;r0=t;}
+     const cg=g.createLinearGradient(l0[0],l0[1],r0[0],r0[1]);cg.addColorStop(0,SK.base);cg.addColorStop(0.2,SK.hi);cg.addColorStop(0.45,SK.base);cg.addColorStop(0.85,SK.sh);cg.addColorStop(1,SK.edge);
+     g.fillStyle=cg;g.beginPath();g.moveTo(A[0],A[1]);g.lineTo(B[0],B[1]);g.lineTo(C2[0],C2[1]);g.lineTo(D[0],D[1]);g.closePath();g.fill();g.strokeStyle=cg;g.lineWidth=1;g.stroke();}
+    // the highest joint catches the light, the pad near the board is in shade
+    const top=S.reduce((m,q)=>q.z>m.z?q:m,S[1]);const hl=g.createRadialGradient(top.x-Wd[1]*0.15,top.y-Wd[1]*0.15,1,top.x,top.y,Wd[1]*0.9);hl.addColorStop(0,'rgba(255,240,225,.28)');hl.addColorStop(1,'rgba(255,240,225,0)');g.fillStyle=hl;g.fillRect(top.x-Wd[1],top.y-Wd[1],Wd[1]*2,Wd[1]*2);
+    [1,2].forEach(j=>{const A=S[j];const bl=g.createRadialGradient(A.x,A.y,1,A.x,A.y,Wd[j]*0.7);bl.addColorStop(0,SK.blush);bl.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=j===1?0.55:0.4;g.fillStyle=bl;g.fillRect(A.x-Wd[j],A.y-Wd[j],Wd[j]*2,Wd[j]*2);g.globalAlpha=1;});
+    const tp=S[3];const pg=g.createRadialGradient(tp.x,tp.y,1,tp.x,tp.y,Wd[3]*0.8);pg.addColorStop(0,SK.blush);pg.addColorStop(1,'rgba(0,0,0,0)');g.globalAlpha=0.45;g.fillStyle=pg;g.fillRect(tp.x-Wd[3],tp.y-Wd[3],Wd[3]*2,Wd[3]*2);g.globalAlpha=1;
+    const m0=M[0],m1=M[Math.min(N,6)];const ao=g.createLinearGradient(m0.x,m0.y,m1.x,m1.y);ao.addColorStop(0,'rgba(0,0,0,.18)');ao.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=ao;g.fillRect(Math.min(m0.x,m1.x)-Wd[0],Math.min(m0.y,m1.y)-Wd[0],Math.abs(m1.x-m0.x)+Wd[0]*2,Math.abs(m1.y-m0.y)+Wd[0]*2);
+    g.restore();
+    // wrinkles over the PIP and DIP joints, across the bone
+    [[1,3],[2,2]].forEach(([j,nW])=>{const A=S[j],pv=S[j-1];const dx=A.x-pv.x,dy=A.y-pv.y,ll=Math.hypot(dx,dy)||1,tx=dx/ll,ty=dy/ll,px2=-ty,py2=tx;
+     for(let q=0;q<nW;q++){const o=(q-(nW-1)/2)*1.3*mm,cx2=A.x+tx*o-tx*1.0*mm,cy2=A.y+ty*o-ty*1.0*mm,ww=Wd[j]*0.3*(1-Math.abs(q-(nW-1)/2)*0.3);g.strokeStyle=SK.crease;g.globalAlpha=0.5;g.lineWidth=Math.max(0.7,0.35*mm);
+      g.beginPath();g.moveTo(cx2+px2*ww,cy2+py2*ww);g.quadraticCurveTo(cx2+tx*0.9*mm,cy2+ty*0.9*mm,cx2-px2*ww,cy2-py2*ww);g.stroke();g.globalAlpha=1;}});
+    // fingernail on the distal bone, foreshortened with it
+    {const A=S[2],B=S[3],dx=B.x-A.x,dy=B.y-A.y,pl=Math.hypot(dx,dy)||1e-6,fr=Math.max(0.12,Math.min(1,pl/f.P[2]));const ux=dx/pl,uy=dy/pl,ang=Math.atan2(uy,ux);
+     const nl=Math.max(2.2*mm,11*mm*fr),nw=Wd[3]*0.33;const cxn=B.x-ux*(nl*0.5+Wd[3]*0.18*fr),cyn=B.y-uy*(nl*0.5+Wd[3]*0.18*fr);
+     g.save();g.translate(cxn,cyn);g.rotate(ang);const np=()=>{g.beginPath();g.moveTo(-nl/2,-nw*0.8);g.quadraticCurveTo(-nl/2-nw*0.25,0,-nl/2,nw*0.8);g.lineTo(nl*0.36,nw);g.quadraticCurveTo(nl/2+nw*0.35,0,nl*0.36,-nw);g.closePath();};
+     const ngr=g.createLinearGradient(0,-nw,0,nw);ngr.addColorStop(0,SK.nail2);ngr.addColorStop(0.45,SK.nail);ngr.addColorStop(1,SK.nail2);g.fillStyle=ngr;np();g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.45;g.lineWidth=0.8;g.stroke();g.globalAlpha=1;
+     if(fr>0.3){g.fillStyle='rgba(255,255,255,.28)';g.beginPath();g.ellipse(-nl*0.38,0,nl*0.14,nw*0.55,0,-Math.PI/2,Math.PI/2);g.fill();g.fillStyle='rgba(255,250,240,.7)';g.beginPath();g.moveTo(nl*0.34,-nw*0.9);g.quadraticCurveTo(nl/2+nw*0.3,0,nl*0.34,nw*0.9);g.quadraticCurveTo(nl*0.42,0,nl*0.34,-nw*0.9);g.fill();}
+     g.strokeStyle='rgba(255,255,255,.45)';g.lineWidth=1;g.beginPath();g.moveTo(-nl*0.3,-nw*0.45);g.lineTo(nl*0.25,-nw*0.5);g.stroke();g.restore();}}
+   // MCP knuckles where the fingers leave the hand
+   for(let i=1;i<=4;i++){const K=HF[i].S[0],w0=HF[i].W[0];const kg=g.createRadialGradient(K.x-w0*0.15,K.y-w0*0.2,1,K.x,K.y,w0*0.55);kg.addColorStop(0,SK.hi);kg.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=0.5;g.fillStyle=kg;g.beginPath();g.arc(K.x,K.y,w0*0.55,0,7);g.fill();g.restore();}
    g.restore();
-   for(let i=1;i<=4;i++){geo[i].tip=H2[i].tip;geo[i].w1=H2[i].w1;}
+   for(let i=1;i<=4;i++){geo[i].tip=HF[i].S[3];geo[i].w1=HF[i].W[3];}
   }else{
   // composite the glass hand
   g.save();g.beginPath();g.rect(0,0,W,py-3);g.clip();
