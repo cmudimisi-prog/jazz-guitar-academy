@@ -314,7 +314,7 @@ body.noscroll{overflow:hidden}body.noscroll .bottom,body.noscroll #mini{display:
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Version 2.9 · Works fully offline. Your progress is saved on this device.</div>
+    <div class="sideFoot">Version 3.0 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1657,7 +1657,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-preset]');
 function linkify(t){return String(t).replace(/Lessons? (\d+)-(\d+)/g,(m,a,b)=>{const L=LESSONS[a+'-'+b];return L?`<a href="#/lesson/${L.id}">Lesson ${L.num}</a>`:m;});}
 // ---------- HAND VIEW: animated fretting hand + scrolling tab with play-line ----------
 const FCOL={1:'#8b5cf6',2:'#f97316',3:'#22c55e',4:'#3b82f6'};
-const SKINS={light:{base:'#efc4a2',sh:'#c38c68',hi:'#fde2cd',edge:'#9c6a4c',crease:'#b07a59',nail:'#f8ddd3',nail2:'#e9bfae'},medium:{base:'#d39b72',sh:'#9d6643',hi:'#ecbf98',edge:'#7a4a2e',crease:'#8f5a39',nail:'#f1cfbf',nail2:'#d9a993'},brown:{base:'#9c6644',sh:'#653c22',hi:'#be8762',edge:'#4a2a16',crease:'#5e381f',nail:'#d9b3a0',nail2:'#b78a75'},dark:{base:'#6a412b',sh:'#3a2114',hi:'#8c5c40',edge:'#26150b',crease:'#3b2214',nail:'#c79f8c',nail2:'#9f7663'}};
+const SKINS={light:{base:'#efc4a2',sh:'#c38c68',hi:'#fde2cd',edge:'#9c6a4c',crease:'#b07a59',nail:'#f8ddd3',nail2:'#e9bfae',blush:'rgba(230,120,110,.6)'},medium:{base:'#d39b72',sh:'#9d6643',hi:'#ecbf98',edge:'#7a4a2e',crease:'#8f5a39',nail:'#f1cfbf',nail2:'#d9a993',blush:'rgba(205,105,85,.55)'},brown:{base:'#9c6644',sh:'#653c22',hi:'#be8762',edge:'#4a2a16',crease:'#5e381f',nail:'#d9b3a0',nail2:'#b78a75',blush:'rgba(150,70,50,.5)'},dark:{base:'#6a412b',sh:'#3a2114',hi:'#8c5c40',edge:'#26150b',crease:'#3b2214',nail:'#c79f8c',nail2:'#9f7663',blush:'rgba(110,50,35,.45)'}};
 const SCOL={1:'#e5e7eb',2:'#a78bfa',3:'#fb923c',4:'#4ade80',5:'#60a5fa',6:'#3b82f6'};
 function fingerPlan(events){const fr=events.flatMap(e=>e.notes).map(n=>n.f).filter(f=>f>0);let p=1;
  if(fr.length){const first=fr.slice(0,8);p=Math.max(1,Math.min(...first));if(Math.max(...first)-p>3)p=Math.max(1,fr[0]);}
@@ -1734,43 +1734,77 @@ class HandView{
   const palmY=kY+sp*1.9;l.beginPath();l.moveTo(cx-span*0.5,kY+sp*0.15);l.bezierCurveTo(cx-span*0.56,palmY+sp*1.2,cx-span*0.3,palmY+sp*2.4,cx-span*0.18,palmY+sp*4.2);l.lineTo(cx+span*0.26,palmY+sp*4.2);l.bezierCurveTo(cx+span*0.34,palmY+sp*2.2,cx+span*0.58,palmY+sp*1.0,cx+span*0.5,kY+sp*0.05);l.quadraticCurveTo(cx,kY-sp*0.55,cx-span*0.5,kY+sp*0.15);l.fill();
   for(let i=1;i<=4;i++){const K=geo[i].K;l.beginPath();l.arc(K.x,K.y,geo[i].w0*0.62,0,7);l.fill();}
   if(style==='real'){
-   const SK=SKINS[Store.get('hvSkin','medium')]||SKINS.medium;
-   // soft drop shadow of the whole hand on the fretboard
-   l.save();l.globalCompositeOperation='source-in';l.fillStyle='#000';l.fillRect(0,0,W,H);l.restore();
-   g.save();g.beginPath();g.rect(0,0,W,py-3);g.clip();g.globalAlpha=0.5;try{g.filter='blur(6px)';}catch(e){}g.drawImage(this.lay,sp*0.35,sp*0.55,W,H);try{g.filter='none';}catch(e){}g.restore();
+   const fretW=Math.abs(knX(1)-knX(4))/3;const U=Math.max(sp,Math.min(sp*1.8,fretW*0.36));const kY2=Math.min(kY,bb+(py-bb)*0.5);
+   const SK=SKINS[Store.get('hvSkin','medium')]||SKINS.medium;const tnow=performance.now()/1000;
+   // ---- anatomy: knuckles on an arc, fingers of different length/width ----
+   const FW=[0,1.0,1.06,0.98,0.84],FL=[0,1.0,1.12,1.04,0.86];const kx0=cx+span*0.08,ksp=U*1.12;
+   const KN={};for(let i=1;i<=4;i++){const sway=Math.sin(tnow*1.3+i)*U*0.03;KN[i]={x:kx0+(2.5-i)*ksp+sway,y:kY2+U*([0,0.3,0,0.12,0.5][i])+Math.cos(tnow*1.1+i)*U*0.02};}
+   const wrist={x:kx0+U*0.9,y:kY2+U*5.6};
+   const cat=(P,N)=>{const E=[{x:2*P[0].x-P[1].x,y:2*P[0].y-P[1].y},...P,{x:2*P[P.length-1].x-P[P.length-2].x,y:2*P[P.length-1].y-P[P.length-2].y}];const out=[];
+    for(let k=1;k<E.length-2;k++){const A=E[k-1],B=E[k],C=E[k+1],D=E[k+2];for(let j=0;j<N;j++){const s2=j/N,s3=s2*s2,s4=s3*s2;out.push({x:0.5*(2*B.x+(-A.x+C.x)*s2+(2*A.x-5*B.x+4*C.x-D.x)*s3+(-A.x+3*B.x-3*C.x+D.x)*s4),y:0.5*(2*B.y+(-A.y+C.y)*s2+(2*A.y-5*B.y+4*C.y-D.y)*s3+(-A.y+3*B.y-3*C.y+D.y)*s4)});}}
+    out.push({...P[P.length-1]});let Lc=0;out.forEach((q,j)=>{if(j)Lc+=Math.hypot(q.x-out[j-1].x,q.y-out[j-1].y);q.l=Lc;});out.forEach(q=>q.t=q.l/(Lc||1));return {pts:out,len:Lc};};
+   const gauss=(t,c,w)=>Math.exp(-(((t-c)/w)**2));
+   const H2={};
+   for(let i=1;i<=4;i++){const T=this.tips[i];const lift=1-T.p;const K=KN[i];const tip={x:T.x+lift*U*0.1,y:T.y-lift*U*0.22};const dx=tip.x-K.x,dy=tip.y-K.y,d=Math.hypot(dx,dy)||1;const ux=dx/d,uy=dy/d,nx=uy,ny=-ux;
+    const nat=U*3.4*FL[i];const bend=Math.max(-U*0.15,Math.min(U*0.85,(nat-d)*0.32))+U*(0.12+lift*0.18);
+    const pip={x:K.x+ux*d*0.47+nx*bend,y:K.y+uy*d*0.47+ny*bend},dip={x:K.x+ux*d*0.77+nx*bend*0.55,y:K.y+uy*d*0.77+ny*bend*0.55};
+    const C=cat([K,pip,dip,tip],12);const wb=U*0.98*FW[i];const press=T.p;
+    const wAt=t=>wb*(1-0.27*t)*(1+0.07*gauss(t,0.47,0.06)+0.05*gauss(t,0.77,0.05)+0.09*press*gauss(t,0.95,0.06))*(1+0.04*Math.sin(t*9+i));
+    const Lp=[],Rp=[],M=[];C.pts.forEach((q,j)=>{const a=C.pts[Math.max(0,j-1)],b=C.pts[Math.min(C.pts.length-1,j+1)];const tx=b.x-a.x,ty=b.y-a.y,tl=Math.hypot(tx,ty)||1;const px2=-ty/tl,py2=tx/tl;const w=wAt(q.t)/2;
+     Lp.push([q.x+px2*w*1.04,q.y+py2*w*1.04]);Rp.push([q.x-px2*w*0.96,q.y-py2*w*0.96]);M.push({x:q.x,y:q.y,nx:px2,ny:py2,w,t:q.t,tx:tx/tl,ty:ty/tl});});
+    H2[i]={Lp,Rp,M,tip,K,pip,dip,w1:wAt(1),w0:wb,len:C.len};}
+   const fingerPath=(c,F)=>{const {Lp,Rp,M}=F;const N=M.length-1;c.beginPath();c.moveTo(Lp[0][0],Lp[0][1]);for(let j=1;j<=N;j++)c.lineTo(Lp[j][0],Lp[j][1]);const e=M[N];const a0=Math.atan2(Lp[N][1]-e.y,Lp[N][0]-e.x);const a1=Math.atan2(Rp[N][1]-e.y,Rp[N][0]-e.x);
+    const ccw=((a1-a0+Math.PI*4)%(Math.PI*2))<Math.PI;c.arc(e.x,e.y,e.w,a0,a1,ccw);for(let j=N;j>=0;j--)c.lineTo(Rp[j][0],Rp[j][1]);c.closePath();};
+   const handPath=c=>{const k1=KN[1],k4=KN[4];c.beginPath();c.moveTo(k4.x-U*0.55,k4.y-U*0.1);c.bezierCurveTo(k4.x-U*0.85,k4.y+U*1.6,wrist.x-U*2.3,wrist.y-U*1.4,wrist.x-U*1.5,wrist.y+U*1.2);c.lineTo(wrist.x+U*1.7,wrist.y+U*1.2);
+    c.bezierCurveTo(wrist.x+U*2.2,wrist.y-U*1.6,k1.x+U*1.2,k1.y+U*1.4,k1.x+U*0.6,k1.y-U*0.15);c.bezierCurveTo(KN[2].x+U*0.3,KN[2].y-U*0.75,KN[3].x-U*0.3,KN[3].y-U*0.7,k4.x-U*0.55,k4.y-U*0.1);c.closePath();};
+   const thumbX=KN[1].x+U*0.35,thumbTop=bt-U*0.95;
+   const thumbPath=c=>{c.beginPath();c.moveTo(thumbX-U*0.48,bt+U*0.05);c.lineTo(thumbX-U*0.44,thumbTop+U*0.45);c.quadraticCurveTo(thumbX-U*0.42,thumbTop,thumbX,thumbTop-U*0.02);c.quadraticCurveTo(thumbX+U*0.46,thumbTop,thumbX+U*0.48,thumbTop+U*0.45);c.lineTo(thumbX+U*0.5,bt+U*0.05);c.closePath();};
+   // ---- silhouette layer -> soft drop shadow on the fretboard ----
+   l.clearRect(0,0,W,H);l.fillStyle='#000';handPath(l);l.fill();for(let i=1;i<=4;i++){fingerPath(l,H2[i]);l.fill();}
+   g.save();g.beginPath();g.rect(0,bt-U*0.3,W,py-3-(bt-U*0.3));g.clip();g.globalAlpha=0.42;try{g.filter='blur(7px)';}catch(e){}g.drawImage(this.lay,U*0.4,U*0.6,W,H);try{g.filter='none';}catch(e){}g.restore();
+   // contact light where the playing fingertip touches the string
+   for(let i=1;i<=4;i++){const T=this.tips[i];if(T.p<0.3)continue;const gl=g.createRadialGradient(T.x,T.y,1,T.x,T.y,U*1.1);gl.addColorStop(0,FCOL[i]+'cc');gl.addColorStop(1,FCOL[i]+'00');g.save();g.globalAlpha=T.p;g.fillStyle=gl;g.beginPath();g.arc(T.x,T.y,U*1.1,0,7);g.fill();g.restore();}
+   const skinShade=(path,x0,y0,x1,y1)=>{const gr=g.createLinearGradient(x0,y0,x1,y1);gr.addColorStop(0,SK.sh);gr.addColorStop(0.3,SK.base);gr.addColorStop(0.5,SK.hi);gr.addColorStop(0.75,SK.base);gr.addColorStop(1,SK.sh);g.fillStyle=gr;path();g.fill();};
    g.save();g.beginPath();g.rect(0,0,W,py-3);g.clip();
-   // back of the hand
-   const pgr=g.createRadialGradient(cx-span*0.1,kY+sp*0.8,sp*0.5,cx,kY+sp*2.5,span*0.75);pgr.addColorStop(0,SK.hi);pgr.addColorStop(0.45,SK.base);pgr.addColorStop(1,SK.sh);
-   g.fillStyle=pgr;g.beginPath();g.moveTo(cx-span*0.5,kY+sp*0.15);g.bezierCurveTo(cx-span*0.56,palmY+sp*1.2,cx-span*0.3,palmY+sp*2.4,cx-span*0.18,palmY+sp*4.2);g.lineTo(cx+span*0.26,palmY+sp*4.2);g.bezierCurveTo(cx+span*0.34,palmY+sp*2.2,cx+span*0.58,palmY+sp*1.0,cx+span*0.5,kY+sp*0.05);g.quadraticCurveTo(cx,kY-sp*0.55,cx-span*0.5,kY+sp*0.15);g.fill();
-   g.strokeStyle=SK.edge;g.globalAlpha=0.5;g.lineWidth=1.2;g.stroke();g.globalAlpha=1;
-   for(let i=1;i<=4;i++){const K=geo[i].K;g.strokeStyle=SK.sh;g.globalAlpha=0.12;g.lineWidth=sp*0.14;g.lineCap='round';g.beginPath();g.moveTo(K.x,K.y+sp*0.5);g.quadraticCurveTo(K.x+(cx-K.x)*0.3,K.y+sp*2,cx+(K.x-cx)*0.35,palmY+sp*3.6);g.stroke();g.globalAlpha=1;}
-   // fingers from little to index
-   for(let i=4;i>=1;i--){const G=geo[i],T=this.tips[i],col=FCOL[i];const {Lp,Rp,M,N}=G.P;
-    // knuckle on the back of the hand
-    const kg=g.createRadialGradient(G.K.x-sp*0.15,G.K.y-sp*0.2,1,G.K.x,G.K.y,G.w0*0.7);kg.addColorStop(0,SK.hi);kg.addColorStop(1,SK.base);g.fillStyle=kg;g.beginPath();g.ellipse(G.K.x,G.K.y,G.w0*0.62,G.w0*0.52,0,0,7);g.fill();
-    // base fill of the finger, then cylindrical shading segment by segment
-    tracePath(g,G.P,G.tip,G.w1);g.fillStyle=SK.base;g.fill();
-    for(let j=0;j<N;j++){const A=Lp[j],B=Lp[j+1],C2=Rp[j+1],D=Rp[j];const mx1=(A[0]+B[0])/2,my1=(A[1]+B[1])/2,mx2=(D[0]+C2[0])/2,my2=(D[1]+C2[1])/2;
-     const cg=g.createLinearGradient(mx1,my1,mx2,my2);cg.addColorStop(0,SK.sh);cg.addColorStop(0.28,SK.base);cg.addColorStop(0.45,SK.hi);cg.addColorStop(0.72,SK.base);cg.addColorStop(1,SK.sh);
+   // ---- thumb tip over the top of the neck ----
+   g.save();g.beginPath();g.rect(0,0,W,bt-U*0.12);g.clip();skinShade(()=>thumbPath(g),thumbX-U*0.5,0,thumbX+U*0.5,0);
+   g.save();g.translate(thumbX,thumbTop+U*0.32);const tnr=U*0.3;const tng=g.createLinearGradient(-tnr,0,tnr,0);tng.addColorStop(0,SK.nail2);tng.addColorStop(0.5,SK.nail);tng.addColorStop(1,SK.nail2);g.fillStyle=tng;g.beginPath();g.ellipse(0,0,tnr,tnr*0.9,0,0,7);g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.45;g.lineWidth=0.8;g.stroke();g.restore();
+   g.strokeStyle=SK.edge;g.globalAlpha=0.35;g.lineWidth=1;thumbPath(g);g.stroke();g.globalAlpha=1;g.restore();
+   // ---- back of the hand ----
+   const hg=g.createRadialGradient(KN[2].x-U*0.5,KN[2].y+U*1.5,U*0.6,wrist.x,wrist.y-U*1.5,span*0.95);hg.addColorStop(0,SK.hi);hg.addColorStop(0.5,SK.base);hg.addColorStop(1,SK.sh);g.fillStyle=hg;handPath(g);g.fill();
+   g.strokeStyle=SK.edge;g.globalAlpha=0.35;g.lineWidth=1;g.stroke();g.globalAlpha=1;
+   for(let i=1;i<=4;i++){const K=KN[i];g.strokeStyle=SK.sh;g.globalAlpha=0.13;g.lineWidth=U*0.16;g.lineCap='round';g.beginPath();g.moveTo(K.x,K.y+U*0.55);g.bezierCurveTo(K.x+(wrist.x-K.x)*0.25,K.y+U*1.8,wrist.x+(K.x-wrist.x)*0.35,wrist.y-U*1.8,wrist.x+(K.x-wrist.x)*0.25,wrist.y);g.stroke();g.globalAlpha=1;}
+   // ---- fingers (little -> index) ----
+   for(let i=4;i>=1;i--){const F=H2[i];const {Lp,Rp,M}=F;const N=M.length-1;
+    fingerPath(g,F);g.fillStyle=SK.base;g.fill();
+    for(let j=0;j<N;j++){const A=Lp[j],B=Lp[j+1],C2=Rp[j+1],D=Rp[j];const cg=g.createLinearGradient((A[0]+B[0])/2,(A[1]+B[1])/2,(D[0]+C2[0])/2,(D[1]+C2[1])/2);cg.addColorStop(0,SK.sh);cg.addColorStop(0.22,SK.base);cg.addColorStop(0.42,SK.hi);cg.addColorStop(0.7,SK.base);cg.addColorStop(1,SK.sh);
      g.fillStyle=cg;g.beginPath();g.moveTo(A[0],A[1]);g.lineTo(B[0],B[1]);g.lineTo(C2[0],C2[1]);g.lineTo(D[0],D[1]);g.closePath();g.fill();}
-    // rounded fingertip pad
-    const tg2=g.createRadialGradient(G.tip.x-G.w1*0.15,G.tip.y-G.w1*0.15,1,G.tip.x,G.tip.y,G.w1*0.62);tg2.addColorStop(0,SK.hi);tg2.addColorStop(0.6,SK.base);tg2.addColorStop(1,SK.sh);g.fillStyle=tg2;g.beginPath();g.arc(G.tip.x,G.tip.y,G.w1*0.5,0,7);g.fill();
-    // outline (coloured glow when pressing)
-    g.save();if(T.p>0.4){g.shadowColor=col;g.shadowBlur=16;g.strokeStyle=col;g.lineWidth=2.2;g.globalAlpha=0.6+0.4*T.p;}else{g.strokeStyle=SK.edge;g.lineWidth=1;g.globalAlpha=0.55;}tracePath(g,G.P,G.tip,G.w1);g.stroke();g.restore();
-    // joint creases (knuckle wrinkles)
-    [[0.42,3],[0.72,2]].forEach(([t,nl])=>{const j=Math.round(t*N);const m=M[j];for(let q=0;q<nl;q++){const off=(q-(nl-1)/2)*sp*0.07;const ax=-m[3],ay=m[2];const cxq=m[0]+ax*off*0,cyq=m[1];const px2=m[0]+(-m[3]*0)+(m[2]*0);
-      const ux=Math.cos(Math.atan2(G.tip.y-G.K.y,G.tip.x-G.K.x)),uy=Math.sin(Math.atan2(G.tip.y-G.K.y,G.tip.x-G.K.x));const ox=ux*off,oy=uy*off;
-      g.strokeStyle=SK.crease;g.globalAlpha=0.55;g.lineWidth=1;g.beginPath();g.moveTo(m[0]+m[2]*m[4]*0.62+ox,m[1]+m[3]*m[4]*0.62+oy);g.quadraticCurveTo(m[0]+ox+ux*sp*0.06,m[1]+oy+uy*sp*0.06,m[0]-m[2]*m[4]*0.62+ox,m[1]-m[3]*m[4]*0.62+oy);g.stroke();g.globalAlpha=1;}});
-    // fingernail near the tip
-    const jn=Math.round(0.86*N),mn=M[jn];const ang=Math.atan2(G.tip.y-mn[1],G.tip.x-mn[0]);const segL=Math.hypot(G.tip.x-mn[0],G.tip.y-mn[1]);
-    g.save();g.translate(mn[0]+(G.tip.x-mn[0])*0.45,mn[1]+(G.tip.y-mn[1])*0.45);g.rotate(ang);const nrx=G.w1*0.44,nry=G.w1*0.31;
-    const ngr=g.createLinearGradient(0,-nry,0,nry);ngr.addColorStop(0,SK.nail2);ngr.addColorStop(0.5,SK.nail);ngr.addColorStop(1,SK.nail2);g.fillStyle=ngr;g.beginPath();g.ellipse(0,0,nrx,nry,0,0,7);g.fill();
-    g.strokeStyle=SK.edge;g.globalAlpha=0.6;g.lineWidth=0.9;g.stroke();g.globalAlpha=0.9;g.strokeStyle='rgba(255,255,255,.75)';g.lineWidth=1;g.beginPath();g.ellipse(nrx*0.15,-nry*0.35,nrx*0.45,nry*0.25,0,Math.PI*1.1,Math.PI*1.9);g.stroke();
-    g.globalAlpha=0.7;g.strokeStyle='rgba(255,250,245,.9)';g.lineWidth=1.4;g.beginPath();g.ellipse(0,0,nrx*0.98,nry*0.98,0,-0.5,0.5);g.stroke();g.restore();
-    // barre: the index finger lies flat across several strings
-    if(T.barre&&T.p>0.5){const y0=Y(T.barre[0],G.tip.x),y1=Y(T.barre[1],G.tip.x);const bw=G.w1*0.95,top=Math.min(y0,y1)-bw*0.45,hh=Math.abs(y1-y0)+bw*0.9;
-     const bg2=g.createLinearGradient(G.tip.x-bw/2,0,G.tip.x+bw/2,0);bg2.addColorStop(0,SK.sh);bg2.addColorStop(0.4,SK.hi);bg2.addColorStop(1,SK.sh);g.save();g.fillStyle=bg2;g.shadowColor=col;g.shadowBlur=12;g.beginPath();g.roundRect?g.roundRect(G.tip.x-bw/2,top,bw,hh,bw/2):g.rect(G.tip.x-bw/2,top,bw,hh);g.fill();g.strokeStyle=col;g.lineWidth=1.6;g.stroke();g.restore();}}
+    const e=M[N];const tg3=g.createRadialGradient(e.x-e.w*0.3,e.y-e.w*0.3,1,e.x,e.y,e.w*1.15);tg3.addColorStop(0,SK.hi);tg3.addColorStop(0.55,SK.base);tg3.addColorStop(1,SK.sh);g.fillStyle=tg3;g.beginPath();g.arc(e.x,e.y,e.w*0.98,0,7);g.fill();
+    // blush on knuckles and pad, occlusion at the base
+    [[0.47,0.55],[0.97,0.6]].forEach(([t,a])=>{const m=M[Math.round(t*N)];const bl=g.createRadialGradient(m.x,m.y,1,m.x,m.y,m.w*1.3);bl.addColorStop(0,SK.blush);bl.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=a;g.fillStyle=bl;g.beginPath();g.arc(m.x,m.y,m.w*1.3,0,7);g.fill();g.restore();});
+    const m0=M[0],m1=M[Math.round(0.16*N)];const ao=g.createLinearGradient(m0.x,m0.y,m1.x,m1.y);ao.addColorStop(0,'rgba(0,0,0,.12)');ao.addColorStop(1,'rgba(0,0,0,0)');g.save();fingerPath(g,F);g.clip();g.fillStyle=ao;g.fillRect(Math.min(m0.x,m1.x)-U*2,Math.min(m0.y,m1.y)-U*2,Math.abs(m1.x-m0.x)+U*4,Math.abs(m1.y-m0.y)+U*4);g.restore();
+    // soft edge
+    g.strokeStyle=SK.edge;g.globalAlpha=0.4;g.lineWidth=0.9;fingerPath(g,F);g.stroke();g.globalAlpha=1;
+    // knuckle wrinkles (back of the finger)
+    [[0.47,3,0.6],[0.77,2,0.5]].forEach(([t,n,wf])=>{const m=M[Math.round(t*N)];for(let q=0;q<n;q++){const o=(q-(n-1)/2)*U*0.075;const bx=m.x+m.tx*o,by=m.y+m.ty*o;const ww=m.w*wf*(1-Math.abs(q-(n-1)/2)*0.25);
+      g.strokeStyle=SK.crease;g.globalAlpha=0.5;g.lineWidth=0.9;g.beginPath();g.moveTo(bx+m.nx*ww,by+m.ny*ww);g.quadraticCurveTo(bx+m.tx*U*0.07,by+m.ty*U*0.07,bx-m.nx*ww,by-m.ny*ww);g.stroke();g.globalAlpha=1;}});
+    // fingernail with lunula and white free edge
+    const mn=M[Math.round(0.9*N)];const ang=Math.atan2(mn.ty,mn.tx);const nl=Math.max(U*0.34,F.len*0.1),nw=mn.w*0.62;
+    g.save();g.translate(mn.x+mn.tx*nl*0.15,mn.y+mn.ty*nl*0.15);g.rotate(ang);
+    const np=()=>{g.beginPath();g.moveTo(-nl*0.55,-nw*0.82);g.quadraticCurveTo(-nl*0.7,0,-nl*0.55,nw*0.82);g.lineTo(nl*0.38,nw*0.86);g.quadraticCurveTo(nl*0.62,0,nl*0.38,-nw*0.86);g.closePath();};
+    const ngr=g.createLinearGradient(0,-nw,0,nw);ngr.addColorStop(0,SK.nail2);ngr.addColorStop(0.45,SK.nail);ngr.addColorStop(1,SK.nail2);g.fillStyle=ngr;np();g.fill();
+    g.fillStyle='rgba(255,255,255,.35)';g.beginPath();g.ellipse(-nl*0.48,0,nl*0.16,nw*0.6,0,-Math.PI/2,Math.PI/2);g.fill();
+    g.fillStyle='rgba(255,250,240,.75)';g.beginPath();g.moveTo(nl*0.32,-nw*0.8);g.quadraticCurveTo(nl*0.6,0,nl*0.32,nw*0.8);g.quadraticCurveTo(nl*0.42,0,nl*0.32,-nw*0.8);g.fill();
+    g.strokeStyle=SK.edge;g.globalAlpha=0.5;g.lineWidth=0.8;np();g.stroke();g.globalAlpha=0.55;g.strokeStyle='#fff';g.lineWidth=1;g.beginPath();g.moveTo(-nl*0.3,-nw*0.4);g.lineTo(nl*0.2,-nw*0.45);g.stroke();g.restore();}
+   // MCP knuckles over the finger bases
+   for(let i=1;i<=4;i++){const K=KN[i],w0=H2[i].w0;const kg=g.createRadialGradient(K.x-w0*0.15,K.y-w0*0.2,1,K.x,K.y,w0*0.75);kg.addColorStop(0,SK.hi);kg.addColorStop(0.6,SK.base);kg.addColorStop(1,SK.base+'00');g.save();g.globalAlpha=0.5;g.fillStyle=kg;g.beginPath();g.ellipse(K.x,K.y,w0*0.5,w0*0.38,0,0,7);g.fill();g.restore();
+    const bl=g.createRadialGradient(K.x,K.y,1,K.x,K.y,w0*0.6);bl.addColorStop(0,SK.blush);bl.addColorStop(1,'rgba(0,0,0,0)');g.save();g.globalAlpha=0.45;g.fillStyle=bl;g.beginPath();g.arc(K.x,K.y,w0*0.6,0,7);g.fill();g.restore();}
+   // barre: index lies flat across the strings
+   const T1=this.tips[1];if(T1.barre&&T1.p>0.5){const x=H2[1].tip.x;const y0=Y(T1.barre[0],x),y1=Y(T1.barre[1],x);const bw=H2[1].w1*1.05,top=Math.min(y0,y1)-bw*0.5,hh=Math.max(y0,y1)-top+bw*0.2;
+    const bg2=g.createLinearGradient(x-bw/2,0,x+bw/2,0);bg2.addColorStop(0,SK.sh);bg2.addColorStop(0.45,SK.hi);bg2.addColorStop(1,SK.sh);g.fillStyle=bg2;g.beginPath();g.roundRect?g.roundRect(x-bw/2,top,bw,hh,bw/2):g.rect(x-bw/2,top,bw,hh);g.fill();g.strokeStyle=SK.edge;g.globalAlpha=0.4;g.stroke();g.globalAlpha=1;
+    [0.3,0.55].forEach(f=>{g.strokeStyle=SK.crease;g.globalAlpha=0.45;g.beginPath();g.moveTo(x-bw*0.35,top+hh*f);g.quadraticCurveTo(x,top+hh*f+3,x+bw*0.35,top+hh*f);g.stroke();g.globalAlpha=1;});}
    g.restore();
+   for(let i=1;i<=4;i++){geo[i].tip=H2[i].tip;geo[i].w1=H2[i].w1;}
   }else{
   // composite the glass hand
   g.save();g.beginPath();g.rect(0,0,W,py-3);g.clip();
