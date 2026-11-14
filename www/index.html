@@ -297,6 +297,7 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
 .ytwrap{position:relative;width:100%;max-width:720px;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--line)}.ytwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .extsvc{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}.extsvc .btn{flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px}.extsvc .btn small{color:var(--muted);font-size:12px;font-weight:400}
 .ext-chordify b{color:#ff6b4a}.ext-songsterr b{color:#4fc3f7}.ext-ug b{color:#f3c969}
+.hvw{padding:0 6px}.hvcanvas{display:block;border-radius:10px}
 .hint{font-size:13px;color:var(--muted);line-height:1.5}
 .weekChart text{fill:var(--muted);font-size:10px;font-family:var(--sans);text-anchor:middle}
 .weekChart rect.b{fill:var(--brass)}
@@ -308,7 +309,7 @@ input[type=range]{accent-color:var(--brass);width:100%;height:28px}
   <aside class="side">
     <a class="brand" href="#/home"><span class="logo">J</span><span><b>Jazz Guitar</b><small>Academy</small></span></a>
     <nav id="sideNav"></nav>
-    <div class="sideFoot">Version 2.5 · Works fully offline. Your progress is saved on this device.</div>
+    <div class="sideFoot">Version 2.6 · Works fully offline. Your progress is saved on this device.</div>
   </aside>
   <main id="view" tabindex="-1"></main>
 </div>
@@ -1649,6 +1650,89 @@ function repCard(M,full){const R=REPERTOIRE[M.id]||[];if(!R.length)return '';
  return `<div class="card"><div class="eyebrow">Repertoire</div><h3 style="margin:4px 0 12px">Apply it to the standards</h3><div class="reps">${R.map(([t,c,y,how,pre])=>{const pi=pre?PRESETS.findIndex(p=>p.name===pre):-1;return `<div class="rep"><div class="rt2"><a href="#/standard/${slugOf(t)}" style="color:inherit"><b>${t}</b></a><small>${c} · ${y}</small></div>${full!==false?`<p>${how}</p>`:''}<div class="row" style="gap:6px"><a class="btn sm" href="#/standard/${slugOf(t)}">${ic('chord')} ${hasChart(t)?'Tab, chords & soundtrack':'Add chart → tab & soundtrack'}</a>${pi>=0?`<a class="btn sm" href="#/jam" data-preset="${pi}">${ic('jam')} Jam it</a>`:''}</div></div>`;}).join('')}</div><p class="hint" style="margin:10px 0 0">Each standard has a comping tab, chord shapes and a backing track. Melodies are copyrighted, so learn them by ear from recordings or a fake book.</p></div>`;}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(!b)return;const J=Store.get('jam',{});const P=PRESETS[+b.dataset.preset];Object.assign(J,{preset:+b.dataset.preset,key:P.key,style:P.style,bpm:P.bpm});Store.set('jam',J);});
 function linkify(t){return String(t).replace(/Lessons? (\d+)-(\d+)/g,(m,a,b)=>{const L=LESSONS[a+'-'+b];return L?`<a href="#/lesson/${L.id}">Lesson ${L.num}</a>`:m;});}
+// ---------- HAND VIEW: animated fretting hand + scrolling tab with play-line ----------
+const FCOL={1:'#8b5cf6',2:'#f97316',3:'#22c55e',4:'#3b82f6'};
+const SCOL={1:'#e5e7eb',2:'#a78bfa',3:'#fb923c',4:'#4ade80',5:'#60a5fa',6:'#3b82f6'};
+function fingerPlan(events){const fr=events.flatMap(e=>e.notes).map(n=>n.f).filter(f=>f>0);let p=1;
+ if(fr.length){const first=fr.slice(0,8);p=Math.max(1,Math.min(...first));if(Math.max(...first)-p>3)p=Math.max(1,fr[0]);}
+ events.forEach(e=>{const fs=e.notes.filter(n=>n.f>0).map(n=>n.f);if(fs.length){const lo=Math.min(...fs),hi=Math.max(...fs);
+   if(fs.length===1){const f=fs[0];if(f<p-1||f>p+4){p=f>p?Math.max(1,f-3):f;}}
+   else{if(lo<p||hi>p+3)p=hi-lo>3?lo:(lo<p?lo:Math.max(1,hi-3));}}
+  e.pos=p;e.fing=e.notes.map(n=>n.f===0?0:Math.max(1,Math.min(4,n.f-p+1)));});return events;}
+class HandView{
+ constructor(wrap,events,bars){this.wrap=wrap;this.ev=fingerPlan(events);this.bars=bars||[];this.cv=document.createElement('canvas');this.cv.className='hvcanvas';wrap.innerHTML='';wrap.appendChild(this.cv);this.g=this.cv.getContext('2d');
+  this.pos=-0.75;this.sync=null;const e0=this.ev.find(e=>e.notes.some(n=>n.f>0));this.hpos=e0?e0.pos:1;this.fa=Math.max(0,this.hpos-2.5);this.tips={};this.resize();
+  if(window.ResizeObserver){this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(wrap);}this.raf=requestAnimationFrame(()=>this.frame());}
+ resize(){const w=Math.max(280,this.wrap.clientWidth||600);const h=Math.round(w*(w<600?1.08:0.66));const d=Math.min(2,window.devicePixelRatio||1);this.cv.width=w*d;this.cv.height=h*d;this.cv.style.width=w+'px';this.cv.style.height=h+'px';this.g.setTransform(d,0,0,d,0,0);this.W=w;this.H=h;}
+ setBeat(bar,beat,t){this.sync={b:bar*4+beat,t};}
+ setCount(n,t){this.sync={b:-4+(n-1),t};}
+ stop(){this.sync=null;this.pos=-0.75;}
+ curPos(){if(this.sync&&TP.playing&&ACTX){const spb=60/TP.o.bpm;return this.sync.b+(ACTX.currentTime-this.sync.t)/spb;}return this.pos;}
+ frame(){if(!this.wrap.isConnected){if(this.ro)this.ro.disconnect();return;}if(this.wrap.offsetParent!==null){const p=this.curPos();if(this.sync)this.pos=p;try{this.draw(p);}catch(e){}}this.raf=requestAnimationFrame(()=>this.frame());}
+ draw(pos){const g=this.g,W=this.W,H=this.H,port=W<600;const spb=TP.playing?60/TP.o.bpm:0.5;
+  g.clearRect(0,0,W,H);const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#16181d');bg.addColorStop(1,'#0b0c0f');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  // current / next event
+  let act=null,nxt=null,prev=null;for(const e of this.ev){if(e.start<=pos+0.02&&pos<e.start+e.dur-0.02&&e.notes.length)act=e;if(e.start<=pos&&e.notes.length)prev=e;if(!nxt&&e.start>pos+0.02&&e.notes.length)nxt=e;}
+  const show=act||(nxt&&nxt.start-pos<0.6?nxt:null)||prev||nxt;const target=show&&show.notes.some(n=>n.f>0)?show.pos:this.hpos;
+  this.hpos+=(target-this.hpos)*0.14;const faT=Math.max(0,this.hpos-2.2);this.fa+=(faT-this.fa)*0.12;const fa=this.fa<0.3?0:this.fa,fb=fa+(port?7.5:9);
+  // board geometry
+  const bt=H*(port?0.07:0.08),bb=H*(port?0.36:0.44),L=W*0.03,Rr=W*(fa===0?0.93:0.99),k=H*0.04;
+  const d=f=>1-Math.pow(2,-f/12);const X=f=>Rr-(d(f)-d(fa))/(d(fb)-d(fa))*(Rr-L);
+  const yT=x=>bt-k*(1-x/W),yB=x=>bb+k*(1-x/W);const Y=(s,x)=>{const t=yT(x),b=yB(x);return t+(6-s+0.5)/6*(b-t);};
+  const sp=(bb-bt)/6;
+  // fretboard
+  g.save();g.beginPath();g.moveTo(L,yT(L)-sp*0.15);g.lineTo(Rr,yT(Rr)-sp*0.15);g.lineTo(Rr,yB(Rr)+sp*0.15);g.lineTo(L,yB(L)+sp*0.15);g.closePath();
+  const wd=g.createLinearGradient(0,bt,0,bb);wd.addColorStop(0,'#2b1d14');wd.addColorStop(0.5,'#3a281b');wd.addColorStop(1,'#24180f');g.fillStyle=wd;g.fill();g.clip();
+  for(const m of [3,5,7,9,15,17]){if(m>fa&&m<=fb){const x=(X(m-1)+X(m))/2;g.fillStyle='rgba(239,228,204,.25)';g.beginPath();g.arc(x,(yT(x)+yB(x))/2,sp*0.22,0,7);g.fill();}}
+  if(12>fa&&12<=fb){const x=(X(11)+X(12))/2;g.fillStyle='rgba(239,228,204,.25)';[0.3,0.7].forEach(r=>{g.beginPath();g.arc(x,yT(x)+(yB(x)-yT(x))*r,sp*0.2,0,7);g.fill();});}
+  for(let f=Math.ceil(fa);f<=Math.floor(fb);f++){const x=X(f);g.strokeStyle=f===0?'#efe7d6':'#a7adb6';g.lineWidth=f===0?7:2.4;g.beginPath();g.moveTo(x,yT(x)-sp*0.2);g.lineTo(x,yB(x)+sp*0.2);g.stroke();}
+  g.restore();
+  // fret numbers
+  g.font=`${Math.max(9,W*0.018)}px system-ui,sans-serif`;g.fillStyle='#6b7280';g.textAlign='center';for(let f=Math.max(1,Math.ceil(fa));f<=Math.floor(fb);f++){const x=(X(f-1)+X(f))/2;g.fillText(String(f),x,yB(x)+sp*0.95);}
+  // strings + glow
+  const glows=[];for(const e of this.ev){if(!e.notes.length)continue;const dt=(pos-e.start)*spb;if(dt>=-0.02&&dt<1.2&&pos<e.start+e.dur+1)e.notes.forEach((n,i)=>glows.push({n,f:e.fing[i],dt,act:e===act}));if(e.start>pos+1)break;}
+  for(let s=1;s<=6;s++){g.strokeStyle='#cbbd94';g.lineWidth=0.8+(s-1)*0.42;g.beginPath();g.moveTo(L,Y(s,L));g.lineTo(Rr+2,Y(s,Rr));g.stroke();}
+  glows.forEach(o=>{const s=o.n.s,col=o.f?FCOL[o.f]:'#e5e7eb';const x0=o.n.f>0?(X(o.n.f-1)*0.35+X(o.n.f)*0.65):Rr;const a=Math.exp(-o.dt*2.6)*(o.act?1:0.6);if(a<0.03)return;
+   g.save();g.globalAlpha=a;g.strokeStyle=col;g.lineWidth=2.6;g.shadowColor=col;g.shadowBlur=14;g.beginPath();const amp=sp*0.12*Math.exp(-o.dt*4);for(let x=L;x<=x0;x+=4){const yy=Y(s,x)+Math.sin(x*0.25+o.dt*60)*amp*Math.sin(Math.PI*(x-L)/(x0-L+1));x===L?g.moveTo(x,yy):g.lineTo(x,yy);}g.stroke();g.restore();
+   if(o.n.f===0&&o.dt<0.5){g.save();g.globalAlpha=a;g.strokeStyle=col;g.lineWidth=2;g.beginPath();g.arc(Rr+sp*0.45,Y(s,Rr),sp*0.28,0,7);g.stroke();g.restore();}});
+  // fingers
+  const pressed={};if(act)act.notes.forEach((n,i)=>{const f=act.fing[i];if(!f)return;(pressed[f]=pressed[f]||[]).push(n);});
+  const hp=this.hpos;const kY=bb+sp*2.7;
+  for(let i=1;i<=4;i++){let tx,ty,on=false,barre=null;const fx=Math.min(fb,Math.max(fa+0.6,hp+i-1));
+   if(pressed[i]){on=true;const ns=pressed[i];const n=ns.reduce((a,b)=>a.s>b.s?a:b);tx=X(n.f-1)*0.35+X(n.f)*0.65;ty=Y(n.s,tx);if(ns.length>1)barre=[Math.min(...ns.map(q=>q.s)),Math.max(...ns.map(q=>q.s))];}
+   else{tx=(X(fx-1)+X(fx))/2;ty=Y(1.6+(i===4?0.4:0),tx)+sp*0.15;}
+   const T=this.tips[i]||(this.tips[i]={x:tx,y:ty});T.x+=(tx-T.x)*0.3;T.y+=(ty-T.y)*0.3;T.on=on;T.barre=barre;}
+  const knX=i=>{const fx=Math.min(fb,Math.max(fa+0.6,hp+i-1));return (X(fx-1)+X(fx))/2;};
+  const cx=(knX(1)+knX(4))/2,span=Math.abs(knX(1)-knX(4))+sp*3;
+  g.save();const pg=g.createRadialGradient(cx,kY+sp*1.6,sp,cx,kY+sp*1.6,span*0.8);pg.addColorStop(0,'rgba(165,170,180,.55)');pg.addColorStop(1,'rgba(120,125,135,.12)');g.fillStyle=pg;g.beginPath();g.ellipse(cx,kY+sp*1.7,span*0.62,sp*2.4,0,0,7);g.fill();g.restore();
+  for(let i=4;i>=1;i--){const T=this.tips[i];const kx=knX(i)+(cx-knX(i))*0.25,ky=kY+(i===4?sp*0.5:i===1?sp*0.3:0);const w=sp*0.92;
+   g.save();g.lineCap='round';if(T.on){g.shadowColor=FCOL[i];g.shadowBlur=18;}
+   const grd=g.createLinearGradient(kx,ky,T.x,T.y);grd.addColorStop(0,T.on?FCOL[i]+'aa':'rgba(150,155,165,.35)');grd.addColorStop(1,T.on?FCOL[i]:'rgba(205,210,218,.55)');
+   g.strokeStyle=grd;g.lineWidth=w;g.beginPath();g.moveTo(kx,ky);g.quadraticCurveTo(kx+(T.x-kx)*0.15,(ky+T.y)/2+sp*0.6,T.x,T.y+w*0.1);g.stroke();
+   if(T.barre&&T.on){g.lineWidth=w*0.7;g.strokeStyle=FCOL[i]+'cc';g.beginPath();g.moveTo(T.x,Y(T.barre[0],T.x));g.lineTo(T.x,Y(T.barre[1],T.x));g.stroke();}
+   g.restore();
+   const r=Math.max(7,sp*0.34);g.beginPath();g.arc(T.x,T.y,r,0,7);g.fillStyle=T.on?FCOL[i]:'rgba(30,32,38,.85)';g.fill();g.lineWidth=1.5;g.strokeStyle=T.on?'#fff':'rgba(220,224,230,.8)';g.stroke();
+   g.fillStyle='#fff';g.font=`700 ${Math.round(r*1.15)}px system-ui,sans-serif`;g.textAlign='center';g.textBaseline='middle';g.fillText(String(i),T.x,T.y+0.5);g.textBaseline='alphabetic';}
+  // scrolling tab panel
+  const px=W*0.02,pw=W*0.96,py=H*(port?0.62:0.63),ph=H-py-H*0.03;g.fillStyle='rgba(10,12,16,.92)';g.strokeStyle='#2c3341';g.lineWidth=1;g.beginPath();g.roundRect?g.roundRect(px,py,pw,ph,10):g.rect(px,py,pw,ph);g.fill();g.stroke();
+  const top=py+ph*0.2,gap=(ph*0.72)/6,lx=px+22,rx=px+pw-8;const playX=px+pw*0.24,ppb=pw/(port?6.5:9);
+  g.save();g.beginPath();g.rect(px+18,py,pw-20,ph);g.clip();
+  for(let s=1;s<=6;s++){const y=top+(s-0.5)*gap;g.strokeStyle='#3a4150';g.lineWidth=1;g.beginPath();g.moveTo(lx,y);g.lineTo(rx,y);g.stroke();}
+  const b0=Math.floor(pos-(playX-lx)/ppb)-1,b1=Math.ceil(pos+(rx-playX)/ppb)+1;
+  for(let b=Math.ceil(b0/4)*4;b<=b1;b+=4){if(b<0)continue;const x=playX+(b-pos)*ppb;g.strokeStyle='#5b6474';g.beginPath();g.moveTo(x,top);g.lineTo(x,top+gap*6);g.stroke();g.fillStyle='#6b7280';g.font=`${Math.max(9,W*0.016)}px system-ui,sans-serif`;g.textAlign='left';g.fillText(String(b/4+1),x+3,py+ph*0.1);
+   const bar=this.bars[b/4];if(bar){let bt2=0;bar.chords.forEach(c=>{g.fillStyle='#f3c969';g.font=`600 ${Math.max(11,W*0.022)}px Georgia,serif`;g.fillText(pretty(c.sym),x+(bt2*ppb)+18,py+ph*0.12);bt2+=c.beats;});}}
+  const fs=Math.max(11,Math.min(gap*0.85,W*0.03));g.font=`700 ${fs}px ui-monospace,Menlo,monospace`;g.textAlign='center';g.textBaseline='middle';
+  for(const e of this.ev){if(e.start>b1)break;if(e.start+e.dur<b0||!e.notes.length)continue;const x=playX+(e.start-pos)*ppb;const isAct=e===act,past=e.start+e.dur<=pos;
+   e.notes.forEach((n,i)=>{const y=top+(n.s-0.5)*gap;const t=String(n.f);const w=g.measureText(t).width+8;const col=e.fing[i]?FCOL[e.fing[i]]:'#e5e7eb';
+    g.fillStyle='rgba(10,12,16,.95)';g.fillRect(x-w/2,y-gap*0.42,w,gap*0.84);
+    if(isAct){g.save();g.shadowColor=col;g.shadowBlur=12;g.fillStyle=col;g.fillText(t,x,y);g.restore();}else{g.fillStyle=past?'rgba(160,166,178,.45)':(Math.abs(e.start-pos)<1.2?col:'#e5e7eb');g.fillText(t,x,y);}});}
+  g.textBaseline='alphabetic';g.restore();
+  g.font=`700 ${Math.max(10,gap*0.6)}px ui-monospace,monospace`;g.textAlign='center';g.textBaseline='middle';['e','B','G','D','A','E'].forEach((n,i)=>{g.fillStyle=SCOL[i+1];g.fillText(n,px+11,top+(i+0.5)*gap);});g.textBaseline='alphabetic';
+  g.save();g.strokeStyle='#a3e635';g.lineWidth=3;g.shadowColor='#a3e635';g.shadowBlur=14;g.beginPath();g.moveTo(playX,py+4);g.lineTo(playX,py+ph-4);g.stroke();g.restore();
+  if(!TP.playing||pos<0){g.fillStyle='rgba(255,255,255,.35)';g.font=`${Math.max(10,W*0.018)}px system-ui,sans-serif`;g.textAlign='right';g.fillText('Fingers: 1 index · 2 middle · 3 ring · 4 little',W-10,H*(port?0.6:0.6));}
+ }
+}
+
 function figHTML(F){
  if(F.type==='parts')return `<div class="card fig"><h3>${F.title}</h3>${PARTS_SVG}</div>`;
  if(F.type==='naturals')return `<div class="card fig"><h3>${F.title}</h3><p class="cap">Gold = C. No natural note between B–C and E–F.</p><div class="fbscroll">${fretboard({from:0,to:12,w:900,sg:24,dots:scaleDots(0,SCALES.ionian.iv,0,12,{names:true})})}</div></div>`;
@@ -1724,13 +1808,14 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
  <div class="lessonGrid"><div class="colMain">
   <div class="screen" id="scr">
    <div class="hud"><div><div class="eyebrow">Chord</div><div class="chordNow" id="cNow">${pretty(song.bars[0].chords[0].sym)}</div></div><div class="beats" id="beats"><i></i><i></i><i></i><i></i></div><div><div class="eyebrow" style="text-align:right">Bar</div><div class="barNow" id="bNow">1 / ${song.bars.length}</div></div></div>
-   <div class="fbwrap" id="vfb">${fretboard({from,to,dots:ghosts,w:720,sg:26})}</div>
+   <div class="fbwrap" id="vfb" ${Store.get('viewMode','hand')==='hand'?'style="display:none"':''}>${fretboard({from,to,dots:ghosts,w:720,sg:26})}</div><div id="hvw" class="hvw" ${Store.get('viewMode','hand')==='hand'?'':'style="display:none"'}></div>
    <div class="caption" id="cap">${L.cues[0]||''}</div>
    <div class="progress"><i id="prog"></i></div>
    <button class="overlay" id="ovl" aria-label="Play video lesson"><span class="pbig">${ic('play',1)}</span><span class="ovt">Play video lesson</span></button>
   </div>
   <div class="card ctrls">
    <div class="row" style="flex-wrap:nowrap"><button class="btn pri" id="pp" style="min-width:104px">${ic('play',1)} Play</button><label class="f" style="flex:1">Tempo · <b id="bv">${st.bpm} BPM</b><input type="range" min="40" max="240" id="bpm" value="${st.bpm}"></label></div>
+   <div class="row" style="gap:8px"><span class="flabel" style="margin:0">Video view</span><div class="chips" id="vmode"><button class="chip ${Store.get('viewMode','hand')==='hand'?'on':''}" data-v="hand">✋ Hand & scrolling tab</button><button class="chip ${Store.get('viewMode','hand')!=='hand'?'on':''}" data-v="board">Fretboard map</button></div></div>
    <div class="row toggles">${tg('t_guitar','Guitar track',st.guitar)}${tg('t_band','Band',st.band)}${tg('t_click','Click',st.click)}${tg('t_loop','Loop',st.loop)}${tg('t_count','Count-in',st.count)}</div>
   </div>
   ${L.grid?gridCard(L.grid.secs,L.grid.title,L.grid.sub,'gridL'):''}
@@ -1748,7 +1833,9 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
   <div class="card" style="display:grid;gap:10px"><button class="btn ${done?'':'pri'}" id="mark">${ic('check')} ${done?'Completed — undo':'Mark lesson complete'}</button>${L.isStd?`<button class="btn" id="stdWav">${ic('dl')} Download soundtrack (WAV)</button><a class="btn" href="#/stdedit/${L.std.slug}">✎ Edit chart</a><a class="btn" href="#/jam" data-jamstd="${L.std.slug}">${ic('jam')} Play in the Jam Room (any key)</a>`:''}<a class="btn" href="#/jam/custom" id="jamThis" ${L.isStd?'style="display:none"':''}>${ic('jam')} Jam on ${L.jam?'the full form':'these changes'}</a></div>
  </aside></div>
  <div class="lnav">${prev?`<a class="btn" href="#/lesson/${prev.id}">${ic('back')} ${prev.num} ${prev.title}</a>`:'<span></span>'}${next?`<a class="btn" href="#/lesson/${next.id}">${next.num} ${next.title} ${ic('next')}</a>`:''}</div>`);
- if(L.grid)mountGrid('gridL',L.grid.secs,L.grid.title,L.grid.sub);const tabw=$('#tabw');const drawTab=()=>{tabw.innerHTML=renderTab(tab.events,song.bars,tabw,L.strum);};drawTab();
+ if(L.grid)mountGrid('gridL',L.grid.secs,L.grid.title,L.grid.sub);let HV=null;const mkHV=()=>{if(!HV&&$('#hvw').style.display!=='none')HV=new HandView($('#hvw'),tab.events,song.bars);};mkHV();
+ $$('#vmode .chip').forEach(c=>c.onclick=()=>{const m=c.dataset.v;Store.set('viewMode',m);$$('#vmode .chip').forEach(x=>x.classList.toggle('on',x===c));$('#vfb').style.display=m==='hand'?'none':'';$('#hvw').style.display=m==='hand'?'':'none';mkHV();});
+ const tabw=$('#tabw');const drawTab=()=>{tabw.innerHTML=renderTab(tab.events,song.bars,tabw,L.strum);};drawTab();
  window.onresize=()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{if(location.hash.startsWith('#/lesson/'+id))drawTab();},200);};
  const save=()=>{const ls=Store.get('lset',{});ls[id]=st;Store.set('lset',ls);};
  const opts=()=>({source:'lesson',lessonId:id,title:L.isStd?L.title:`Lesson ${L.num} · ${L.title}`,href:L.href||`#/lesson/${id}`,bpm:st.bpm,style:L.style||'swing',swing:0.64,straight:!!L.straight,ring:L.ring||0,compInst:'piano',
@@ -1759,12 +1846,12 @@ VIEWS.lesson=(id)=>{const L=LESSONS[id];if(!L){location.hash='#/lessons';return;
  function onUI(e){if(!$('#scr'))return;
   if(e.type==='note'){clearOn();const g=$('#tn'+e.idx);if(g){g.classList.add('on');lastOn.push(g);}
    e.ev.notes.forEach(n=>{const d=$(`#vd-${n.s}-${n.f}`);if(d){d.classList.remove('ghost');d.classList.add('on');lastOn.push(d);ripple(d);}const s=svg.querySelector('.s'+n.s);if(s){s.classList.remove('vib');s.getBoundingClientRect();s.classList.add('vib');}});}
-  else if(e.type==='beat'){if(e.beat===0&&L.grid)highlightGridBar(e.bar);$$('#beats i').forEach((b,k)=>{b.className=k===e.beat?'on':'';});
+  else if(e.type==='beat'){if(HV)HV.setBeat(e.bar,e.beat,e.t);if(e.beat===0&&L.grid)highlightGridBar(e.bar);$$('#beats i').forEach((b,k)=>{b.className=k===e.beat?'on':'';});
    let acc=0,cur=song.bars[e.bar].chords[0];for(const c of song.bars[e.bar].chords){if(e.beat>=acc)cur=c;acc+=c.beats;}
    $('#cNow').textContent=pretty(cur.sym);$('#bNow').textContent=`${e.bar+1} / ${song.bars.length}`;if(e.beat===0)$('#cap').textContent=L.cues[e.bar]||'';
    $('#prog').style.width=((e.bar*4+e.beat+1)/(song.bars.length*4)*100)+'%';}
-  else if(e.type==='count'){$$('#beats i').forEach((b,k)=>{b.className=k===e.n-1?'cnt':'';});$('#cNow').textContent=e.n;$('#cap').textContent='Count-in… '+e.n;}}
- function resetUI(){if(!$('#scr'))return;clearOn();$('#ovl').hidden=false;$('#pp').innerHTML=`${ic('play',1)} Play`;$$('#beats i').forEach(b=>b.className='');$('#prog').style.width='0';}
+  else if(e.type==='count'){if(HV)HV.setCount(e.n,e.t);$$('#beats i').forEach((b,k)=>{b.className=k===e.n-1?'cnt':'';});$('#cNow').textContent=e.n;$('#cap').textContent='Count-in… '+e.n;}}
+ function resetUI(){if(!$('#scr'))return;if(HV)HV.stop();clearOn();$('#ovl').hidden=false;$('#pp').innerHTML=`${ic('play',1)} Play`;$$('#beats i').forEach(b=>b.className='');$('#prog').style.width='0';}
  const play=()=>{if(TP.playing&&TP.o.lessonId===id){tpStop();return;}tpStart(song,opts());$('#ovl').hidden=true;$('#pp').innerHTML=`${ic('stop',1)} Stop`;};
  if(TP.playing&&TP.o.lessonId===id){TP.o.onUI=onUI;TP.o.onStop=resetUI;$('#ovl').hidden=true;$('#pp').innerHTML=`${ic('stop',1)} Stop`;}
  $('#ovl').onclick=play;$('#pp').onclick=play;
